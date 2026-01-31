@@ -1,0 +1,215 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { chatAPI, contestAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
+const ContestChat = () => {
+    const { id } = useParams();
+    const { user } = useAuth();
+    const [contest, setContest] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
+    const messagesEndRef = useRef(null);
+    const pollInterval = useRef(null);
+
+    useEffect(() => {
+        loadData();
+
+        // Poll for new messages every 3 seconds
+        pollInterval.current = setInterval(() => {
+            loadMessages();
+        }, 3000);
+
+        return () => {
+            if (pollInterval.current) {
+                clearInterval(pollInterval.current);
+            }
+        };
+    }, [id]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    const loadData = async () => {
+        try {
+            const [contestRes, chatRes] = await Promise.all([
+                contestAPI.getOne(id),
+                chatAPI.getMessages(id)
+            ]);
+            setContest(contestRes.data);
+            setMessages(chatRes.data.messages || []);
+        } catch (error) {
+            console.error('Failed to load data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadMessages = async () => {
+        try {
+            const res = await chatAPI.getMessages(id);
+            setMessages(res.data.messages || []);
+        } catch (error) {
+            console.error('Failed to load messages:', error);
+        }
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleSend = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() || sending) return;
+
+        setSending(true);
+        try {
+            await chatAPI.sendMessage(id, { message_text: newMessage.trim() });
+            setNewMessage('');
+            await loadMessages();
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const formatTime = (dateString) => {
+        return new Date(dateString).toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short'
+        });
+    };
+
+    const getRoleColor = (role) => {
+        switch (role) {
+            case 'coordinator': return 'text-amber-400';
+            case 'mentor': return 'text-green-400';
+            default: return 'text-indigo-400';
+        }
+    };
+
+    const isMyMessage = (msg) => {
+        switch (user.role) {
+            case 'student': return msg.sender_student_id === user.student_id;
+            case 'mentor': return msg.sender_mentor_id === user.mentor_id;
+            case 'coordinator': return msg.sender_coordinator_id === user.coordinator_id;
+            default: return false;
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto px-4 py-4 h-screen flex flex-col">
+            {/* Header */}
+            <div className="card p-4 mb-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <Link to={`/contests/${id}`} className="mr-4 text-gray-400 hover:text-white">
+                            ←
+                        </Link>
+                        <div>
+                            <h1 className="text-xl font-bold text-white">{contest?.title}</h1>
+                            <p className="text-sm text-gray-400">Contest Chat</p>
+                        </div>
+                    </div>
+                    <div className="text-sm text-gray-400">
+                        {messages.length} messages
+                    </div>
+                </div>
+            </div>
+
+            {/* Messages */}
+            <div className="card flex-1 overflow-y-auto p-4 mb-4">
+                {messages.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-gray-400">
+                        <div className="text-center">
+                            <span className="text-4xl block mb-2">💬</span>
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {messages.map((msg, index) => {
+                            const isMine = isMyMessage(msg);
+                            const showDate = index === 0 ||
+                                formatDate(msg.sent_at) !== formatDate(messages[index - 1].sent_at);
+
+                            return (
+                                <div key={msg.message_id}>
+                                    {showDate && (
+                                        <div className="text-center text-xs text-gray-500 my-4">
+                                            {formatDate(msg.sent_at)}
+                                        </div>
+                                    )}
+                                    <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[75%] ${isMine ? 'order-2' : ''}`}>
+                                            {!isMine && (
+                                                <p className={`text-xs mb-1 ${getRoleColor(msg.sender_role)}`}>
+                                                    {msg.sender_name}
+                                                    <span className="text-gray-500 ml-1 capitalize">
+                                                        ({msg.sender_role})
+                                                    </span>
+                                                </p>
+                                            )}
+                                            <div className={`rounded-2xl px-4 py-2 ${isMine
+                                                    ? 'bg-indigo-500 text-white rounded-br-sm'
+                                                    : 'bg-white/10 text-white rounded-bl-sm'
+                                                }`}>
+                                                <p className="break-words">{msg.message_text}</p>
+                                            </div>
+                                            <p className={`text-xs text-gray-500 mt-1 ${isMine ? 'text-right' : ''}`}>
+                                                {formatTime(msg.sent_at)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div ref={messagesEndRef} />
+                    </div>
+                )}
+            </div>
+
+            {/* Message Input */}
+            <form onSubmit={handleSend} className="card p-4">
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="input flex-1"
+                        disabled={sending}
+                    />
+                    <button
+                        type="submit"
+                        disabled={sending || !newMessage.trim()}
+                        className="btn-primary px-6"
+                    >
+                        {sending ? '...' : 'Send'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default ContestChat;
