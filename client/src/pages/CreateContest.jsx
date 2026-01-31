@@ -11,6 +11,8 @@ const CreateContest = () => {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
+        organizer: '',      // e.g., "TCS", "Google", "Unstop"
+        platform: '',       // e.g., "HackerRank", "Unstop", "CodeChef"
         location: '',
         department: '',
         registration_deadline: '',
@@ -18,7 +20,7 @@ const CreateContest = () => {
         is_team_based: false,
         max_team_size: 4,
         mentor_id: '',
-        image_url: '',
+        image: null,
         external_reg_link: '',
         submission_link: ''
     });
@@ -37,11 +39,18 @@ const CreateContest = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value
-        });
+        const { name, value, type, checked, files } = e.target;
+        if (type === 'file') {
+            setFormData({
+                ...formData,
+                [name]: files[0]
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: type === 'checkbox' ? checked : value
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -50,11 +59,27 @@ const CreateContest = () => {
         setLoading(true);
 
         try {
-            const data = {
-                ...formData,
-                mentor_id: formData.mentor_id ? parseInt(formData.mentor_id) : null,
-                max_team_size: parseInt(formData.max_team_size)
-            };
+
+            const data = new FormData();
+            data.append('title', formData.title);
+            data.append('description', formData.description);
+            data.append('organizer', formData.organizer);
+            data.append('platform', formData.platform);
+            data.append('location', formData.location);
+            data.append('department', formData.department);
+            data.append('registration_deadline', formData.registration_deadline);
+            data.append('submission_deadline', formData.submission_deadline);
+            data.append('is_team_based', formData.is_team_based);
+            data.append('max_team_size', formData.max_team_size);
+            data.append('external_reg_link', formData.external_reg_link);
+            data.append('submission_link', formData.submission_link);
+
+            if (formData.mentor_id) {
+                data.append('mentor_id', formData.mentor_id);
+            }
+            if (formData.image) {
+                data.append('image', formData.image);
+            }
 
             await contestAPI.create(data);
             navigate('/coordinator');
@@ -93,20 +118,21 @@ const CreateContest = () => {
                         />
                     </div>
 
-                    {/* Image URL */}
+                    {/* Banner Image Upload */}
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Banner Image URL (Optional)
+                            Banner Image (Optional)
                         </label>
-                        <input
-                            type="url"
-                            name="image_url"
-                            value={formData.image_url}
-                            onChange={handleChange}
-                            className="input"
-                            placeholder="https://example.com/image.jpg"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Provide a direct link to an image (e.g. Unsplash)</p>
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="file"
+                                name="image"
+                                onChange={handleChange}
+                                className="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20"
+                                accept="image/*"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Upload a banner image (JPG, PNG, WebP)</p>
                     </div>
 
                     {/* Description */}
@@ -120,11 +146,51 @@ const CreateContest = () => {
                             onChange={handleChange}
                             className="input min-h-[100px]"
                             placeholder="Describe the contest..."
-                            rows={4}
                         />
                     </div>
 
-                    {/* External Links */}
+                    {/* Organizer & Platform */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Contest Organizer
+                            </label>
+                            <input
+                                type="text"
+                                name="organizer"
+                                value={formData.organizer}
+                                onChange={handleChange}
+                                className="input"
+                                placeholder="e.g., TCS, Google, Unstop"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Who is organizing this external contest?</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Platform
+                            </label>
+                            <input
+                                type="text"
+                                name="platform"
+                                value={formData.platform}
+                                onChange={handleChange}
+                                className="input"
+                                list="platform-options"
+                                placeholder="e.g., HackerRank, Unstop, CodeChef"
+                            />
+                            <datalist id="platform-options">
+                                <option value="HackerRank" />
+                                <option value="Unstop" />
+                                <option value="CodeChef" />
+                                <option value="LeetCode" />
+                                <option value="Codeforces" />
+                                <option value="HackerEarth" />
+                                <option value="GeeksforGeeks" />
+                                <option value="Other" />
+                            </datalist>
+                            <p className="text-xs text-gray-500 mt-1">Where is this contest hosted?</p>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { contestAPI, mentorAPI, registrationAPI } from '../services/api';
+import { contestAPI, mentorAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const CoordinatorDashboard = () => {
@@ -10,6 +10,8 @@ const CoordinatorDashboard = () => {
     const [mentors, setMentors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0, active: 0, participants: 0 });
+    const [activeTab, setActiveTab] = useState('active');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         loadData();
@@ -73,6 +75,19 @@ const CoordinatorDashboard = () => {
         );
     }
 
+    // Filter contests based on active tab and search query
+    const filteredContests = contests
+        .filter(c => {
+            const now = new Date();
+            const deadline = new Date(c.submission_deadline);
+            if (activeTab === 'active') {
+                return deadline > now;
+            } else {
+                return deadline <= now;
+            }
+        })
+        .filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Header */}
@@ -84,7 +99,7 @@ const CoordinatorDashboard = () => {
                     <p className="text-gray-400">Manage contests and monitor registrations</p>
                 </div>
                 <Link to="/coordinator/contests/new" className="btn-primary">
-                    + Create Contest
+                    + Add Contest
                 </Link>
             </div>
 
@@ -108,65 +123,110 @@ const CoordinatorDashboard = () => {
                 </div>
             </div>
 
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-4 mb-6 border-b border-white/10">
+                <button
+                    onClick={() => setActiveTab('active')}
+                    className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'active'
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                >
+                    Active Contests
+                    {activeTab === 'active' && (
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 rounded-t-full"></div>
+                    )}
+                </button>
+                <button
+                    onClick={() => setActiveTab('ended')}
+                    className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'ended'
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                >
+                    Past Contests
+                    {activeTab === 'ended' && (
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 rounded-t-full"></div>
+                    )}
+                </button>
+            </div>
+
             {/* Contest Table */}
             <div className="card overflow-hidden">
-                <div className="p-6 border-b border-white/10">
-                    <h2 className="text-xl font-bold text-white">My Contests</h2>
+                <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 className="text-xl font-bold text-white">
+                        {activeTab === 'active' ? 'Active Contests' : 'Past Contests'}
+                    </h2>
+                    {/* Search Bar */}
+                    <div className="relative w-full sm:w-48">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="input pl-9 w-full py-1.5 text-sm"
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                            🔍
+                        </span>
+                    </div>
                 </div>
 
-                {contests.length === 0 ? (
+                {filteredContests.length === 0 ? (
                     <div className="p-12 text-center text-gray-400">
-                        <p className="mb-4">You haven't created any contests yet.</p>
-                        <Link to="/coordinator/contests/new" className="btn-primary">
-                            Create Your First Contest
-                        </Link>
+                        <p className="mb-4">No {activeTab === 'active' ? 'active' : 'past'} contests found.</p>
+                        {activeTab === 'active' && (
+                            <Link to="/coordinator/contests/new" className="btn-primary">
+                                Create New Contest
+                            </Link>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-white/10">
-                                    <th className="text-left p-4 text-gray-400 font-medium">Contest</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Status</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Type</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Deadline</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Registrations</th>
-                                    <th className="text-right p-4 text-gray-400 font-medium">Actions</th>
+                                    <th className="text-left p-3 text-gray-400 font-medium text-sm">Contest</th>
+                                    <th className="text-left p-3 text-gray-400 font-medium text-sm">Status</th>
+                                    <th className="text-left p-3 text-gray-400 font-medium text-sm">Type</th>
+                                    <th className="text-left p-3 text-gray-400 font-medium text-sm">Deadline</th>
+                                    <th className="text-left p-3 text-gray-400 font-medium text-sm">Participants</th>
+                                    <th className="text-right p-3 text-gray-400 font-medium text-sm">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {contests.map((contest) => {
+                                {filteredContests.map((contest) => {
                                     const status = getStatus(contest);
                                     return (
                                         <tr key={contest.contest_id} className="border-b border-white/5 hover:bg-white/5">
-                                            <td className="p-4">
+                                            <td className="p-3">
                                                 <Link
                                                     to={`/contests/${contest.contest_id}`}
-                                                    className="font-medium text-white hover:text-indigo-400"
+                                                    className="font-medium text-white hover:text-indigo-400 text-sm"
                                                 >
                                                     {contest.title}
                                                 </Link>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-3">
                                                 <span className={`badge ${status.class}`}>{status.label}</span>
                                             </td>
-                                            <td className="p-4">
-                                                <span className="text-gray-300">
+                                            <td className="p-3">
+                                                <span className="text-gray-300 text-sm">
                                                     {contest.is_team_based ? 'Team' : 'Individual'}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-gray-400">
+                                            <td className="p-3 text-gray-400 text-sm">
                                                 {formatDate(contest.registration_deadline)}
                                             </td>
-                                            <td className="p-4 text-white font-medium">
+                                            <td className="p-3 text-white font-medium text-sm">
                                                 {contest.registration_count || 0}
                                             </td>
-                                            <td className="p-4 text-right">
+                                            <td className="p-3 text-right">
                                                 <Link
-                                                    to={`/coordinator/contests/${contest.contest_id}/registrations`}
-                                                    className="text-indigo-400 hover:text-indigo-300 text-sm mr-4"
+                                                    to={`/contests/${contest.contest_id}`}
+                                                    className="text-indigo-400 hover:text-indigo-300 text-sm"
                                                 >
-                                                    View Details
+                                                    View
                                                 </Link>
                                             </td>
                                         </tr>

@@ -48,6 +48,8 @@ CREATE TABLE contests (
     contest_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     description TEXT,
+    organizer TEXT,  -- e.g., "TCS", "Google", "Unstop"
+    platform TEXT,   -- e.g., "HackerRank", "Unstop", "CodeChef"
     location TEXT,
     department TEXT,
     registration_deadline DATETIME NOT NULL,

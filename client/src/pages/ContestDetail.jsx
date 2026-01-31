@@ -16,11 +16,17 @@ const ContestDetail = () => {
     const [myTeam, setMyTeam] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [copied, setCopied] = useState(false);
+    const [registrations, setRegistrations] = useState([]);
+    const [loadingRegistrations, setLoadingRegistrations] = useState(false);
 
     useEffect(() => {
         loadContest();
         if (user?.role === 'student') {
             checkRegistration();
+        }
+        if (user?.role === 'coordinator' || user?.role === 'mentor') {
+            loadRegistrations();
         }
     }, [id, user]);
 
@@ -50,6 +56,18 @@ const ContestDetail = () => {
             setMyTeam(team);
         } catch (error) {
             console.error('Failed to check registration:', error);
+        }
+    };
+
+    const loadRegistrations = async () => {
+        setLoadingRegistrations(true);
+        try {
+            const res = await registrationAPI.getByContest(id);
+            setRegistrations(res.data);
+        } catch (error) {
+            console.error('Failed to load registrations:', error);
+        } finally {
+            setLoadingRegistrations(false);
         }
     };
 
@@ -136,6 +154,25 @@ const ContestDetail = () => {
         return new Date() < new Date(contest.registration_deadline);
     };
 
+    const handleShareURL = async () => {
+        const url = window.location.href;
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -148,10 +185,18 @@ const ContestDetail = () => {
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
-            {/* Back Button */}
-            <Link to="/contests" className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors">
-                ← Back to Contests
-            </Link>
+            {/* Top Navigation */}
+            <div className="flex items-center justify-between mb-6">
+                <Link to="/contests" className="inline-flex items-center text-gray-400 hover:text-white transition-colors">
+                    ← Back to Contests
+                </Link>
+                <button
+                    onClick={handleShareURL}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors text-sm"
+                >
+                    {copied ? '✓ Copied!' : '🔗 Share URL'}
+                </button>
+            </div>
 
             {/* Contest Header */}
             <div className="card p-8 mb-6">
@@ -261,14 +306,31 @@ const ContestDetail = () => {
                     </div>
                 )}
 
-                {/* Contest Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
+                        {contest.organizer && (
+                            <div className="flex items-center">
+                                <span className="text-2xl mr-3">🏆</span>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Organizer</p>
+                                    <p className="text-white font-medium">{contest.organizer}</p>
+                                </div>
+                            </div>
+                        )}
+                        {contest.platform && (
+                            <div className="flex items-center">
+                                <span className="text-2xl mr-3">🌐</span>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Platform</p>
+                                    <p className="text-white font-medium">{contest.platform}</p>
+                                </div>
+                            </div>
+                        )}
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">📍</span>
                             <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wide">Location</p>
-                                <p className="text-white font-medium">{contest.location || 'To be announced'}</p>
+                                <p className="text-white font-medium">{contest.location || 'Online / External'}</p>
                             </div>
                         </div>
                         <div className="flex items-center">
@@ -281,7 +343,7 @@ const ContestDetail = () => {
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">👤</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Coordinator</p>
+                                <p className="text-xs text-gray-500 uppercase tracking-wide">Added By</p>
                                 <p className="text-white font-medium">{contest.coordinator_name}</p>
                             </div>
                         </div>
@@ -319,6 +381,25 @@ const ContestDetail = () => {
                     </div>
                 )}
             </div>
+
+            {/* Chat Link - Right after contest details */}
+            {(myRegistration || myTeam || user?.role !== 'student') && (
+                <div className="mt-6 mb-6">
+                    <Link
+                        to={`/contests/${id}/chat`}
+                        className="card p-6 flex items-center justify-between hover:border-indigo-500/50"
+                    >
+                        <div className="flex items-center">
+                            <span className="text-3xl mr-4">💬</span>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Contest Chat</h3>
+                                <p className="text-sm text-gray-400">Discuss with participants and mentors</p>
+                            </div>
+                        </div>
+                        <span className="text-gray-400">→</span>
+                    </Link>
+                </div>
+            )}
 
             {/* Create Team Form */}
             {showTeamForm && (
@@ -381,22 +462,61 @@ const ContestDetail = () => {
                 </div>
             )}
 
-            {/* Chat Link */}
-            {(myRegistration || myTeam || user?.role !== 'student') && (
-                <div className="mt-6">
-                    <Link
-                        to={`/contests/${id}/chat`}
-                        className="card p-6 flex items-center justify-between hover:border-indigo-500/50"
-                    >
-                        <div className="flex items-center">
-                            <span className="text-3xl mr-4">💬</span>
-                            <div>
-                                <h3 className="text-lg font-bold text-white">Contest Chat</h3>
-                                <p className="text-sm text-gray-400">Discuss with participants and mentors</p>
-                            </div>
+            {/* Registered Students Table - For Coordinators/Mentors */}
+            {(user?.role === 'coordinator' || user?.role === 'mentor') && (
+                <div className="card p-6 mt-6">
+                    <h3 className="text-xl font-bold text-white mb-4">Registered Students ({registrations.length})</h3>
+                    {loadingRegistrations ? (
+                        <p className="text-gray-400">Loading registrations...</p>
+                    ) : registrations.length === 0 ? (
+                        <p className="text-gray-400">No students registered yet.</p>
+                    ) : (
+                        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                            <table className="w-full text-sm">
+                                <thead className="sticky top-0 bg-gray-900/95">
+                                    <tr className="border-b border-white/10">
+                                        <th className="text-left p-3 text-gray-400 font-medium">Name</th>
+                                        <th className="text-left p-3 text-gray-400 font-medium">Register No</th>
+                                        <th className="text-left p-3 text-gray-400 font-medium">Department</th>
+                                        <th className="text-left p-3 text-gray-400 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {registrations.map((reg) => (
+                                        <tr key={reg.registration_id} className="border-b border-white/5 hover:bg-white/5">
+                                            <td className="p-3 text-white">{reg.student_name}</td>
+                                            <td className="p-3 text-gray-300">{reg.register_no || 'N/A'}</td>
+                                            <td className="p-3 text-gray-300">{reg.department || 'N/A'}</td>
+                                            <td className="p-3">
+                                                <span className={`badge ${reg.submitted ? 'badge-success' : 'badge-warning'}`}>
+                                                    {reg.submitted ? 'Submitted' : 'Registered'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                        <span className="text-gray-400">→</span>
-                    </Link>
+                    )}
+                </div>
+            )}
+
+            {/* Mark as Registered Button - For students who are not yet registered */}
+            {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && !contest.is_team_based && (
+                <div className="mt-6 p-6 card bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Ready to Participate?</h3>
+                            <p className="text-gray-400 text-sm">Register now to join this contest</p>
+                        </div>
+                        <button
+                            onClick={handleRegister}
+                            disabled={registering}
+                            className="btn-primary px-8 py-3 text-base"
+                        >
+                            {registering ? 'Registering...' : 'Mark as Registered'}
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
