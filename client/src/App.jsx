@@ -9,7 +9,9 @@ import Register from './pages/Register';
 import ContestList from './pages/ContestList';
 import ContestDetail from './pages/ContestDetail';
 import ContestChat from './pages/ContestChat';
-import StudentDashboard from './pages/StudentDashboard';
+import StudentHome from './pages/StudentHome';
+import StudentMyContests from './pages/StudentMyContests';
+import StudentProfile from './pages/StudentProfile';
 import CoordinatorDashboard from './pages/CoordinatorDashboard';
 import MentorDashboard from './pages/MentorDashboard';
 import CreateContest from './pages/CreateContest';
@@ -71,7 +73,19 @@ function App() {
           {/* Student Routes */}
           <Route path="/student" element={
             <ProtectedRoute roles={['student']}>
-              <Layout><StudentDashboard /></Layout>
+              <Layout><StudentHome /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/student/my-contests" element={
+            <ProtectedRoute roles={['student']}>
+              <Layout><StudentMyContests /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/student/profile" element={
+            <ProtectedRoute roles={['student']}>
+              <Layout><StudentProfile /></Layout>
             </ProtectedRoute>
           } />
 

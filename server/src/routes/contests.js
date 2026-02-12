@@ -116,77 +116,83 @@ t.*,
 });
 
 // POST /api/contests - Create new contest (Coordinator only)
-router.post('/', authenticate, authorize('coordinator'), upload.single('image'), (req, res) => {
-    try {
-        const {
-            title,
-            description,
-            organizer,
-            platform,
-            location,
-            department,
-            registration_deadline,
-            submission_deadline,
-            is_team_based,
-            max_team_size,
-            external_reg_link,
-            submission_link,
-            mentor_id
-        } = req.body;
-
-        // Get image URL from uploaded file or from body
-        const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body.image_url || null);
-
-        if (!title || !registration_deadline || !submission_deadline) {
-            return res.status(400).json({
-                error: 'Title, registration deadline, and submission deadline are required'
-            });
+router.post('/', authenticate, authorize('coordinator'), (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
         }
 
-        // Validate dates
-        const regDeadline = new Date(registration_deadline);
-        const subDeadline = new Date(submission_deadline);
+        try {
+            const {
+                title,
+                description,
+                organizer,
+                platform,
+                location,
+                department,
+                registration_deadline,
+                submission_deadline,
+                is_team_based,
+                max_team_size,
+                external_reg_link,
+                submission_link,
+                mentor_id
+            } = req.body;
 
-        if (regDeadline >= subDeadline) {
-            return res.status(400).json({
-                error: 'Registration deadline must be before submission deadline'
+            // Get image URL from uploaded file or from body
+            const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body.image_url || null);
+
+            if (!title || !registration_deadline || !submission_deadline) {
+                return res.status(400).json({
+                    error: 'Title, registration deadline, and submission deadline are required'
+                });
+            }
+
+            // Validate dates
+            const regDeadline = new Date(registration_deadline);
+            const subDeadline = new Date(submission_deadline);
+
+            if (regDeadline >= subDeadline) {
+                return res.status(400).json({
+                    error: 'Registration deadline must be before submission deadline'
+                });
+            }
+
+            const result = db.prepare(`
+                INSERT INTO contests
+                (title, description, organizer, platform, location, department, registration_deadline, submission_deadline,
+                 is_team_based, max_team_size, image_url, external_reg_link, submission_link, created_by, mentor_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                title,
+                description || null,
+                organizer || null,
+                platform || null,
+                location || null,
+                department || null,
+                registration_deadline,
+                submission_deadline,
+                is_team_based === 'true' || is_team_based === true ? 1 : 0,
+                max_team_size || 1,
+                image_url,
+                external_reg_link || null,
+                submission_link || null,
+                req.user.id,
+                mentor_id || null
+            );
+
+            // Create contest chat automatically
+            db.prepare('INSERT INTO contest_chats (contest_id) VALUES (?)').run(result.lastInsertRowid);
+
+            res.status(201).json({
+                message: 'Contest created successfully',
+                contest_id: result.lastInsertRowid
             });
+        } catch (error) {
+            console.error('Create contest error:', error);
+            res.status(500).json({ error: 'Failed to create contest' });
         }
-
-        const result = db.prepare(`
-            INSERT INTO contests
-            (title, description, organizer, platform, location, department, registration_deadline, submission_deadline,
-             is_team_based, max_team_size, image_url, external_reg_link, submission_link, created_by, mentor_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-            title,
-            description || null,
-            organizer || null,
-            platform || null,
-            location || null,
-            department || null,
-            registration_deadline,
-            submission_deadline,
-            is_team_based === 'true' || is_team_based === true ? 1 : 0,
-            max_team_size || 1,
-            image_url,
-            external_reg_link || null,
-            submission_link || null,
-            req.user.id,
-            mentor_id || null
-        );
-
-        // Create contest chat automatically
-        db.prepare('INSERT INTO contest_chats (contest_id) VALUES (?)').run(result.lastInsertRowid);
-
-        res.status(201).json({
-            message: 'Contest created successfully',
-            contest_id: result.lastInsertRowid
-        });
-    } catch (error) {
-        console.error('Create contest error:', error);
-        res.status(500).json({ error: 'Failed to create contest' });
-    }
+    });
 });
 
 // PUT /api/contests/:id - Update contest (Coordinator only)
