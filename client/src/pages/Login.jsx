@@ -8,6 +8,7 @@ const Login = () => {
     const [role, setRole] = useState('student');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -18,7 +19,6 @@ const Login = () => {
 
         try {
             const user = await login(email, password, role);
-            // Navigate based on role
             switch (user.role) {
                 case 'coordinator':
                     navigate('/coordinator');
@@ -40,7 +40,6 @@ const Login = () => {
         setEmail(demoEmail);
         setPassword(demoPassword);
         setRole(demoRole);
-
         setError('');
         setLoading(true);
 
@@ -64,134 +63,222 @@ const Login = () => {
     };
 
     const roles = [
-        { id: 'student', label: 'Student', icon: '🎓' },
-        { id: 'coordinator', label: 'Coordinator', icon: '👔' },
-        { id: 'mentor', label: 'Mentor', icon: '👨‍🏫' }
+        {
+            id: 'student',
+            label: 'Student',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5" />
+                </svg>
+            ),
+        },
+        {
+            id: 'coordinator',
+            label: 'Coordinator',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                    <line x1="12" y1="12" x2="12" y2="12.01" />
+                </svg>
+            ),
+        },
+        {
+            id: 'mentor',
+            label: 'Mentor',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            ),
+        },
     ];
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-12">
-            <div className="max-w-md w-full">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30">
-                        <span className="text-3xl font-bold text-white">K</span>
-                    </div>
-                    <h1 className="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
-                    <p className="text-gray-400">Sign in to KIOT Contest Portal</p>
-                </div>
+        <div className="login-page">
+            {/* ===== LEFT: Branding Panel ===== */}
+            <div className="login-brand-panel">
+                {/* Floating orbs */}
+                <div className="login-orb login-orb-1" />
+                <div className="login-orb login-orb-2" />
+                <div className="login-orb login-orb-3" />
 
-                {/* Login Card */}
-                <div className="card p-8 animate-fade-in">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Role Selection */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-3">
-                                Login as
-                            </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {roles.map((r) => (
-                                    <button
-                                        key={r.id}
-                                        type="button"
-                                        onClick={() => setRole(r.id)}
-                                        className={`p-4 rounded-xl border-2 transition-all text-center ${role === r.id
-                                            ? 'border-indigo-500 bg-indigo-500/10'
-                                            : 'border-white/10 hover:border-white/20'
-                                            }`}
-                                    >
-                                        <span className="text-2xl block mb-1">{r.icon}</span>
-                                        <span className="text-xs font-medium">{r.label}</span>
-                                    </button>
-                                ))}
-                            </div>
+                <div className="login-brand-content">
+                    <div className="login-brand-logo">K</div>
+                    <h1 className="login-brand-title">KIOT Contest Portal</h1>
+                    <p className="login-brand-subtitle">
+                        Your all-in-one platform for managing, participating, and excelling in contests.
+                    </p>
+                    <ul className="login-brand-features">
+                        <li>
+                            <span className="login-feature-icon">🏆</span>
+                            Create &amp; manage contests seamlessly
+                        </li>
+                        <li>
+                            <span className="login-feature-icon">👥</span>
+                            Team collaboration &amp; mentorship
+                        </li>
+                        <li>
+                            <span className="login-feature-icon">📊</span>
+                            Real-time progress tracking
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* ===== RIGHT: Form Panel ===== */}
+            <div className="login-form-panel">
+                <div className="login-card">
+                    {/* Header */}
+                    <div className="login-card-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your account to continue</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit}>
+                        {/* Role Selector */}
+                        <div className="login-role-selector">
+                            {roles.map((r) => (
+                                <button
+                                    key={r.id}
+                                    type="button"
+                                    className={`login-role-btn ${role === r.id ? 'active' : ''}`}
+                                    onClick={() => setRole(r.id)}
+                                >
+                                    {r.icon}
+                                    {r.label}
+                                </button>
+                            ))}
                         </div>
 
                         {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="input"
-                                placeholder="Enter your email"
-                                required
-                            />
+                        <div className="login-input-group">
+                            <label htmlFor="login-email">Email</label>
+                            <div className="login-input-wrapper">
+                                <span className="login-input-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                    </svg>
+                                </span>
+                                <input
+                                    id="login-email"
+                                    type="email"
+                                    className="login-input"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Password */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="input"
-                                placeholder="Enter your password"
-                                required
-                            />
+                        <div className="login-input-group">
+                            <label htmlFor="login-password">Password</label>
+                            <div className="login-input-wrapper">
+                                <span className="login-input-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </span>
+                                <input
+                                    id="login-password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="login-input"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    style={{ paddingRight: '48px' }}
+                                />
+                                <button
+                                    type="button"
+                                    className="login-password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex={-1}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                            <line x1="1" y1="1" x2="23" y2="23" />
+                                            <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                                        </svg>
+                                    ) : (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Error Message */}
+                        {/* Error */}
                         {error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                            <div className="login-error">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="15" y1="9" x2="9" y2="15" />
+                                    <line x1="9" y1="9" x2="15" y2="15" />
+                                </svg>
                                 {error}
                             </div>
                         )}
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full flex items-center justify-center"
-                        >
+                        {/* Submit */}
+                        <button type="submit" disabled={loading} className="login-submit-btn">
                             {loading ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                <div className="animate-spin rounded-full" style={{ width: 20, height: 20, borderTop: '2px solid #fff', borderBottom: '2px solid #fff', borderLeft: '2px solid transparent', borderRight: '2px solid transparent', borderRadius: '50%' }} />
                             ) : (
-                                'Sign In'
+                                <>
+                                    Sign In
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                        <polyline points="12 5 19 12 12 19" />
+                                    </svg>
+                                </>
                             )}
                         </button>
                     </form>
 
-                    {/* Quick Demo Login */}
-                    <div className="mt-8 pt-6 border-t border-white/10">
-                        <p className="text-xs text-center text-gray-400 mb-4 font-medium uppercase tracking-wide">
-                            Quick Demo Login
-                        </p>
-                        <div className="grid grid-cols-3 gap-3">
-                            <button
-                                onClick={() => handleDemoLogin('student@kiot.edu', 'student123', 'student')}
-                                className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-medium text-gray-300 transition-colors"
-                            >
-                                Demo Student
-                            </button>
-                            <button
-                                onClick={() => handleDemoLogin('admin@kiot.edu', 'admin123', 'coordinator')}
-                                className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 text-xs font-medium text-indigo-300 transition-colors"
-                            >
-                                Demo Admin
-                            </button>
-                            <button
-                                onClick={() => handleDemoLogin('mentor@kiot.edu', 'mentor123', 'mentor')}
-                                className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-xs font-medium text-amber-300 transition-colors"
-                            >
-                                Demo Mentor
-                            </button>
-                        </div>
+                    {/* Demo Login */}
+                    <div className="login-divider">
+                        <span>Quick Demo</span>
+                    </div>
+                    <div className="login-demo-grid">
+                        <button
+                            className="login-demo-btn student"
+                            onClick={() => handleDemoLogin('student@kiot.edu', 'student123', 'student')}
+                        >
+                            🎓 Student
+                        </button>
+                        <button
+                            className="login-demo-btn coordinator"
+                            onClick={() => handleDemoLogin('admin@kiot.edu', 'admin123', 'coordinator')}
+                        >
+                            👔 Admin
+                        </button>
+                        <button
+                            className="login-demo-btn mentor"
+                            onClick={() => handleDemoLogin('mentor@kiot.edu', 'mentor123', 'mentor')}
+                        >
+                            👨‍🏫 Mentor
+                        </button>
                     </div>
 
                     {/* Register Link */}
                     {role === 'student' && (
-                        <p className="mt-6 text-center text-sm text-gray-400">
+                        <p className="login-register-link">
                             Don't have an account?{' '}
-                            <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium">
-                                Register here
-                            </Link>
+                            <Link to="/register">Register here</Link>
                         </p>
                     )}
                 </div>

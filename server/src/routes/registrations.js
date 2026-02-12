@@ -65,6 +65,12 @@ router.get('/my', authenticate, authorize('student'), (req, res) => {
                 cr.*,
                 c.title,
                 c.description,
+                c.organizer,
+                c.platform,
+                c.location,
+                c.image_url,
+                c.external_reg_link,
+                c.submission_link,
                 c.registration_deadline,
                 c.submission_deadline,
                 c.is_team_based
