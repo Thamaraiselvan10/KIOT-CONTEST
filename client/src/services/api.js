@@ -64,6 +64,7 @@ export const teamAPI = {
 // Mentor API
 export const mentorAPI = {
     getAll: () => api.get('/mentors'),
+    create: (data) => api.post('/mentors', data),
     getMyContests: () => api.get('/mentors/my/contests'),
     getMyTeams: () => api.get('/mentors/my/teams'),
     assignToContest: (data) => api.post('/mentors/assign/contest', data),

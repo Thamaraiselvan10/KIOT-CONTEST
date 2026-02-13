@@ -28,8 +28,8 @@ const Layout = ({ children }) => (
 const Unauthorized = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="card p-8 text-center">
-      <h1 className="text-3xl font-bold text-red-400 mb-4">Access Denied</h1>
-      <p className="text-gray-400 mb-6">You don't have permission to view this page.</p>
+      <h1 className="text-3xl font-bold text-red-600 mb-4">Access Denied</h1>
+      <p className="text-stone-500 mb-6">You don't have permission to view this page.</p>
       <a href="/" className="btn-primary">Go Home</a>
     </div>
   </div>

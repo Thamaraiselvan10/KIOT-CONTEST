@@ -58,7 +58,7 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to={user ? getDashboardLink() : '/'} className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-primary)' }}>
                             <span className="text-xl font-bold text-white">K</span>
                         </div>
                         <span className="text-xl font-bold gradient-text">KIOT Contest</span>
@@ -76,7 +76,7 @@ const Navbar = () => {
                                             to={link.path}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
                                                 ? 'bg-indigo-500/20 text-indigo-400'
-                                                : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                                : 'text-gray-400 hover:text-indigo-400 hover:bg-white/5'
                                                 }`}
                                         >
                                             {link.label}

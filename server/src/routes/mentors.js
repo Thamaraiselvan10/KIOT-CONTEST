@@ -1,8 +1,46 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import db from '../db/index.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// POST /api/mentors - Create a new mentor (coordinator only)
+router.post('/', authenticate, authorize('coordinator'), (req, res) => {
+    try {
+        const { name, email, password, department } = req.body;
+
+        if (!name || !email || !password || !department) {
+            return res.status(400).json({ error: 'Name, email, password, and department are required' });
+        }
+
+        // Check if email already exists
+        const existing = db.prepare('SELECT email FROM mentors WHERE email = ?').get(email);
+        if (existing) {
+            return res.status(409).json({ error: 'A mentor with this email already exists' });
+        }
+
+        const password_hash = bcrypt.hashSync(password, 10);
+
+        const result = db.prepare(`
+            INSERT INTO mentors (name, email, department, password_hash)
+            VALUES (?, ?, ?, ?)
+        `).run(name, email, department, password_hash);
+
+        res.status(201).json({
+            message: 'Mentor created successfully',
+            mentor: {
+                mentor_id: result.lastInsertRowid,
+                name,
+                email,
+                department
+            }
+        });
+    } catch (error) {
+        console.error('Create mentor error:', error);
+        res.status(500).json({ error: 'Failed to create mentor' });
+    }
+});
 
 // GET /api/mentors - List all mentors
 router.get('/', authenticate, authorize('coordinator'), (req, res) => {

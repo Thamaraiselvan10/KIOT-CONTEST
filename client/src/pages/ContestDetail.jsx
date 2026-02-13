@@ -176,7 +176,7 @@ const ContestDetail = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
             </div>
         );
     }
@@ -187,15 +187,25 @@ const ContestDetail = () => {
         <div className="max-w-5xl mx-auto px-4 py-8">
             {/* Top Navigation */}
             <div className="flex items-center justify-between mb-6">
-                <Link to="/contests" className="inline-flex items-center text-gray-400 hover:text-white transition-colors">
+                <Link to="/contests" className="inline-flex items-center text-stone-500 hover:text-teal-600 transition-colors">
                     ← Back to Contests
                 </Link>
-                <button
-                    onClick={handleShareURL}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors text-sm"
-                >
-                    {copied ? '✓ Copied!' : '🔗 Share URL'}
-                </button>
+                <div className="flex items-center gap-3">
+                    {(user?.role === 'coordinator' || user?.role === 'mentor') && contest && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                            {contest.registration_count || 0} Registered
+                        </div>
+                    )}
+                    <button
+                        onClick={handleShareURL}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-teal-600 transition-colors text-sm"
+                    >
+                        {copied ? '✓ Copied!' : '🔗 Share URL'}
+                    </button>
+                </div>
             </div>
 
             {/* Contest Header */}
@@ -207,10 +217,10 @@ const ContestDetail = () => {
                             {contest.is_team_based ? (
                                 <span className="badge badge-primary">Team Based</span>
                             ) : (
-                                <span className="badge bg-white/10 text-gray-300">Individual</span>
+                                <span className="badge bg-stone-100 text-stone-600">Individual</span>
                             )}
                         </div>
-                        <h1 className="text-3xl font-bold text-white">{contest.title}</h1>
+                        <h1 className="text-3xl font-bold text-stone-900">{contest.title}</h1>
                     </div>
 
                     {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && (
@@ -243,7 +253,7 @@ const ContestDetail = () => {
 
                 {/* Contest Image */}
                 {contest.image_url && (
-                    <div className="mb-8 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                    <div className="mb-8 rounded-xl overflow-hidden border border-stone-200 bg-stone-100">
                         <img
                             src={contest.image_url}
                             alt={contest.title}
@@ -254,12 +264,12 @@ const ContestDetail = () => {
 
                 {/* Messages */}
                 {error && (
-                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-4">
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 mb-4">
                         {error}
                     </div>
                 )}
                 {success && (
-                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 mb-4">
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 mb-4">
                         {success}
                     </div>
                 )}
@@ -267,8 +277,8 @@ const ContestDetail = () => {
                 {/* Description */}
                 {contest.description && (
                     <div className="mb-8">
-                        <h3 className="text-lg font-bold text-white mb-2">About the Contest</h3>
-                        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{contest.description}</p>
+                        <h3 className="text-lg font-bold text-stone-900 mb-2">About the Contest</h3>
+                        <p className="text-stone-600 leading-relaxed whitespace-pre-wrap">{contest.description}</p>
                     </div>
                 )}
 
@@ -280,12 +290,12 @@ const ContestDetail = () => {
                                 href={contest.external_reg_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 flex items-center gap-3 transition-colors group"
+                                className="p-4 rounded-xl bg-teal-50 border border-teal-200 hover:bg-teal-50 flex items-center gap-3 transition-colors group"
                             >
                                 <span className="text-2xl">📝</span>
                                 <div>
-                                    <p className="text-xs text-indigo-300 uppercase tracking-wide font-medium">Registration Link</p>
-                                    <p className="text-white group-hover:text-indigo-300 font-medium truncate">Click to Register External</p>
+                                    <p className="text-xs text-teal-700 uppercase tracking-wide font-medium">Registration Link</p>
+                                    <p className="text-stone-900 group-hover:text-teal-700 font-medium truncate">Click to Register External</p>
                                 </div>
                             </a>
                         )}
@@ -294,12 +304,12 @@ const ContestDetail = () => {
                                 href={contest.submission_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 flex items-center gap-3 transition-colors group"
+                                className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-50 flex items-center gap-3 transition-colors group"
                             >
                                 <span className="text-2xl">📤</span>
                                 <div>
-                                    <p className="text-xs text-green-300 uppercase tracking-wide font-medium">Submission Link</p>
-                                    <p className="text-white group-hover:text-green-300 font-medium truncate">Click to Submit Project</p>
+                                    <p className="text-xs text-emerald-700 uppercase tracking-wide font-medium">Submission Link</p>
+                                    <p className="text-stone-900 group-hover:text-emerald-700 font-medium truncate">Click to Submit Project</p>
                                 </div>
                             </a>
                         )}
@@ -312,8 +322,8 @@ const ContestDetail = () => {
                             <div className="flex items-center">
                                 <span className="text-2xl mr-3">🏆</span>
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Organizer</p>
-                                    <p className="text-white font-medium">{contest.organizer}</p>
+                                    <p className="text-xs text-stone-400 uppercase tracking-wide">Organizer</p>
+                                    <p className="text-stone-900 font-medium">{contest.organizer}</p>
                                 </div>
                             </div>
                         )}
@@ -321,30 +331,30 @@ const ContestDetail = () => {
                             <div className="flex items-center">
                                 <span className="text-2xl mr-3">🌐</span>
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide">Platform</p>
-                                    <p className="text-white font-medium">{contest.platform}</p>
+                                    <p className="text-xs text-stone-400 uppercase tracking-wide">Platform</p>
+                                    <p className="text-stone-900 font-medium">{contest.platform}</p>
                                 </div>
                             </div>
                         )}
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">📍</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Location</p>
-                                <p className="text-white font-medium">{contest.location || 'Online / External'}</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Location</p>
+                                <p className="text-stone-900 font-medium">{contest.location || 'Online / External'}</p>
                             </div>
                         </div>
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">🏢</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Department</p>
-                                <p className="text-white font-medium">{contest.department || 'All Departments'}</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Department</p>
+                                <p className="text-stone-900 font-medium">{contest.department || 'All Departments'}</p>
                             </div>
                         </div>
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">👤</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Added By</p>
-                                <p className="text-white font-medium">{contest.coordinator_name}</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Added By</p>
+                                <p className="text-stone-900 font-medium">{contest.coordinator_name}</p>
                             </div>
                         </div>
                     </div>
@@ -352,31 +362,31 @@ const ContestDetail = () => {
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">🗓️</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Registration Deadline</p>
-                                <p className="text-white font-medium">{formatDate(contest.registration_deadline)}</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Registration Deadline</p>
+                                <p className="text-stone-900 font-medium">{formatDate(contest.registration_deadline)}</p>
                             </div>
                         </div>
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">⏰</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Submission Deadline</p>
-                                <p className="text-white font-medium">{formatDate(contest.submission_deadline)}</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Submission Deadline</p>
+                                <p className="text-stone-900 font-medium">{formatDate(contest.submission_deadline)}</p>
                             </div>
                         </div>
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">👥</span>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Registrations</p>
-                                <p className="text-white font-medium">{contest.registration_count} participants</p>
+                                <p className="text-xs text-stone-400 uppercase tracking-wide">Registrations</p>
+                                <p className="text-stone-900 font-medium">{contest.registration_count} participants</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {contest.is_team_based && (
-                    <div className="mt-6 pt-6 border-t border-white/10">
-                        <p className="text-gray-400">
-                            <strong className="text-white">Team Size:</strong> Up to {contest.max_team_size} members
+                    <div className="mt-6 pt-6 border-t border-stone-200">
+                        <p className="text-stone-500">
+                            <strong className="text-stone-900">Team Size:</strong> Up to {contest.max_team_size} members
                         </p>
                     </div>
                 )}
@@ -387,16 +397,16 @@ const ContestDetail = () => {
                 <div className="mt-6 mb-6">
                     <Link
                         to={`/contests/${id}/chat`}
-                        className="card p-6 flex items-center justify-between hover:border-indigo-500/50"
+                        className="card p-6 flex items-center justify-between hover:border-teal-300"
                     >
                         <div className="flex items-center">
                             <span className="text-3xl mr-4">💬</span>
                             <div>
-                                <h3 className="text-lg font-bold text-white">Contest Chat</h3>
-                                <p className="text-sm text-gray-400">Discuss with participants and mentors</p>
+                                <h3 className="text-lg font-bold text-stone-900">Contest Chat</h3>
+                                <p className="text-sm text-stone-500">Discuss with participants and mentors</p>
                             </div>
                         </div>
-                        <span className="text-gray-400">→</span>
+                        <span className="text-stone-500">→</span>
                     </Link>
                 </div>
             )}
@@ -404,7 +414,7 @@ const ContestDetail = () => {
             {/* Create Team Form */}
             {showTeamForm && (
                 <div className="card p-6 mb-6 animate-fade-in">
-                    <h3 className="text-xl font-bold text-white mb-4">Create Your Team</h3>
+                    <h3 className="text-xl font-bold text-stone-900 mb-4">Create Your Team</h3>
                     <form onSubmit={handleCreateTeam} className="flex gap-4">
                         <input
                             type="text"
@@ -431,17 +441,17 @@ const ContestDetail = () => {
             {/* Teams Section */}
             {contest.is_team_based && contest.teams && contest.teams.length > 0 && (
                 <div className="card p-6">
-                    <h3 className="text-xl font-bold text-white mb-4">Teams ({contest.teams.length})</h3>
+                    <h3 className="text-xl font-bold text-stone-900 mb-4">Teams ({contest.teams.length})</h3>
                     <div className="grid gap-4 md:grid-cols-2">
                         {contest.teams.map((team) => (
-                            <div key={team.team_id} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div key={team.team_id} className="p-4 rounded-xl bg-stone-50 border border-stone-200">
                                 <div className="flex items-center justify-between mb-2">
-                                    <h4 className="font-bold text-white">{team.team_name}</h4>
-                                    <span className="text-sm text-gray-400">
+                                    <h4 className="font-bold text-stone-900">{team.team_name}</h4>
+                                    <span className="text-sm text-stone-500">
                                         {team.member_count}/{contest.max_team_size}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-400 mb-3">
+                                <p className="text-sm text-stone-500 mb-3">
                                     Leader: {team.leader_name}
                                 </p>
                                 {user?.role === 'student' &&
@@ -465,28 +475,28 @@ const ContestDetail = () => {
             {/* Registered Students Table - For Coordinators/Mentors */}
             {(user?.role === 'coordinator' || user?.role === 'mentor') && (
                 <div className="card p-6 mt-6">
-                    <h3 className="text-xl font-bold text-white mb-4">Registered Students ({registrations.length})</h3>
+                    <h3 className="text-xl font-bold text-stone-900 mb-4">Registered Students ({registrations.length})</h3>
                     {loadingRegistrations ? (
-                        <p className="text-gray-400">Loading registrations...</p>
+                        <p className="text-stone-500">Loading registrations...</p>
                     ) : registrations.length === 0 ? (
-                        <p className="text-gray-400">No students registered yet.</p>
+                        <p className="text-stone-500">No students registered yet.</p>
                     ) : (
                         <div className="overflow-x-auto max-h-96 overflow-y-auto">
                             <table className="w-full text-sm">
-                                <thead className="sticky top-0 bg-gray-900/95">
-                                    <tr className="border-b border-white/10">
-                                        <th className="text-left p-3 text-gray-400 font-medium">Name</th>
-                                        <th className="text-left p-3 text-gray-400 font-medium">Register No</th>
-                                        <th className="text-left p-3 text-gray-400 font-medium">Department</th>
-                                        <th className="text-left p-3 text-gray-400 font-medium">Status</th>
+                                <thead className="sticky top-0 bg-white">
+                                    <tr className="border-b border-stone-200">
+                                        <th className="text-left p-3 text-stone-500 font-medium">Name</th>
+                                        <th className="text-left p-3 text-stone-500 font-medium">Register No</th>
+                                        <th className="text-left p-3 text-stone-500 font-medium">Department</th>
+                                        <th className="text-left p-3 text-stone-500 font-medium">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {registrations.map((reg) => (
-                                        <tr key={reg.registration_id} className="border-b border-white/5 hover:bg-white/5">
-                                            <td className="p-3 text-white">{reg.student_name}</td>
-                                            <td className="p-3 text-gray-300">{reg.register_no || 'N/A'}</td>
-                                            <td className="p-3 text-gray-300">{reg.department || 'N/A'}</td>
+                                        <tr key={reg.registration_id} className="border-b border-stone-100 hover:bg-stone-50">
+                                            <td className="p-3 text-stone-900">{reg.student_name}</td>
+                                            <td className="p-3 text-stone-600">{reg.register_no || 'N/A'}</td>
+                                            <td className="p-3 text-stone-600">{reg.department || 'N/A'}</td>
                                             <td className="p-3">
                                                 <span className={`badge ${reg.submitted ? 'badge-success' : 'badge-warning'}`}>
                                                     {reg.submitted ? 'Submitted' : 'Registered'}
@@ -503,11 +513,11 @@ const ContestDetail = () => {
 
             {/* Mark as Registered Button - For students who are not yet registered */}
             {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && !contest.is_team_based && (
-                <div className="mt-6 p-6 card bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30">
+                <div className="mt-6 p-6 card bg-teal-50 border-teal-200">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div>
-                            <h3 className="text-lg font-bold text-white">Ready to Participate?</h3>
-                            <p className="text-gray-400 text-sm">Register now to join this contest</p>
+                            <h3 className="text-lg font-bold text-stone-900">Ready to Participate?</h3>
+                            <p className="text-stone-500 text-sm">Register now to join this contest</p>
                         </div>
                         <button
                             onClick={handleRegister}

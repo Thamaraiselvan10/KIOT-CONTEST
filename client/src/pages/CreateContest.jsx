@@ -94,17 +94,17 @@ const CreateContest = () => {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-8">
-            <Link to="/coordinator" className="inline-flex items-center text-gray-400 hover:text-white mb-6">
+            <Link to="/coordinator" className="inline-flex items-center text-stone-500 hover:text-teal-600 mb-6">
                 ← Back to Dashboard
             </Link>
 
             <div className="card p-8">
-                <h1 className="text-2xl font-bold text-white mb-6">Create New Contest</h1>
+                <h1 className="text-2xl font-bold text-stone-900 mb-6">Create New Contest</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-stone-600 mb-2">
                             Contest Title *
                         </label>
                         <input
@@ -120,7 +120,7 @@ const CreateContest = () => {
 
                     {/* Banner Image Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-stone-600 mb-2">
                             Banner Image (Optional)
                         </label>
                         <div className="flex items-center gap-4">
@@ -128,16 +128,16 @@ const CreateContest = () => {
                                 type="file"
                                 name="image"
                                 onChange={handleChange}
-                                className="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20"
+                                className="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-600 hover:file:bg-teal-50"
                                 accept="image/*"
                             />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Upload a banner image (JPG, PNG, WebP)</p>
+                        <p className="text-xs text-stone-400 mt-1">Upload a banner image (JPG, PNG, WebP)</p>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-stone-600 mb-2">
                             Description
                         </label>
                         <textarea
@@ -152,7 +152,7 @@ const CreateContest = () => {
                     {/* Organizer & Platform */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Contest Organizer
                             </label>
                             <input
@@ -163,10 +163,10 @@ const CreateContest = () => {
                                 className="input"
                                 placeholder="e.g., TCS, Google, Unstop"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Who is organizing this external contest?</p>
+                            <p className="text-xs text-stone-400 mt-1">Who is organizing this external contest?</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Platform
                             </label>
                             <input
@@ -188,12 +188,12 @@ const CreateContest = () => {
                                 <option value="GeeksforGeeks" />
                                 <option value="Other" />
                             </datalist>
-                            <p className="text-xs text-gray-500 mt-1">Where is this contest hosted?</p>
+                            <p className="text-xs text-stone-400 mt-1">Where is this contest hosted?</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 External Registration Link (Optional)
                             </label>
                             <input
@@ -206,7 +206,7 @@ const CreateContest = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Submission Link (Optional)
                             </label>
                             <input
@@ -223,7 +223,7 @@ const CreateContest = () => {
                     {/* Location & Department */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Location
                             </label>
                             <input
@@ -236,7 +236,7 @@ const CreateContest = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Department
                             </label>
                             <select
@@ -256,7 +256,7 @@ const CreateContest = () => {
                     {/* Deadlines */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Registration Deadline *
                             </label>
                             <input
@@ -269,7 +269,7 @@ const CreateContest = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Submission Deadline *
                             </label>
                             <input
@@ -284,7 +284,7 @@ const CreateContest = () => {
                     </div>
 
                     {/* Team Options */}
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
                         <label className="flex items-center cursor-pointer mb-4">
                             <input
                                 type="checkbox"
@@ -293,12 +293,12 @@ const CreateContest = () => {
                                 onChange={handleChange}
                                 className="w-5 h-5 rounded border-gray-600 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 bg-transparent"
                             />
-                            <span className="ml-3 text-white font-medium">Team-based Contest</span>
+                            <span className="ml-3 text-stone-900 font-medium">Team-based Contest</span>
                         </label>
 
                         {formData.is_team_based && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Maximum Team Size
                                 </label>
                                 <input
@@ -316,7 +316,7 @@ const CreateContest = () => {
 
                     {/* Mentor */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-stone-600 mb-2">
                             Assign Mentor (Optional)
                         </label>
                         <select
@@ -336,7 +336,7 @@ const CreateContest = () => {
 
                     {/* Error */}
                     {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+                        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600">
                             {error}
                         </div>
                     )}

@@ -93,9 +93,9 @@ const ContestChat = () => {
 
     const getRoleColor = (role) => {
         switch (role) {
-            case 'coordinator': return 'text-amber-400';
-            case 'mentor': return 'text-green-400';
-            default: return 'text-indigo-400';
+            case 'coordinator': return 'text-amber-600';
+            case 'mentor': return 'text-emerald-600';
+            default: return 'text-teal-600';
         }
     };
 
@@ -111,7 +111,7 @@ const ContestChat = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
             </div>
         );
     }
@@ -122,15 +122,15 @@ const ContestChat = () => {
             <div className="card p-4 mb-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <Link to={`/contests/${id}`} className="mr-4 text-gray-400 hover:text-white">
+                        <Link to={`/contests/${id}`} className="mr-4 text-stone-500 hover:text-teal-600">
                             ←
                         </Link>
                         <div>
-                            <h1 className="text-xl font-bold text-white">{contest?.title}</h1>
-                            <p className="text-sm text-gray-400">Contest Chat</p>
+                            <h1 className="text-xl font-bold text-stone-900">{contest?.title}</h1>
+                            <p className="text-sm text-stone-500">Contest Chat</p>
                         </div>
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-stone-500">
                         {messages.length} messages
                     </div>
                 </div>
@@ -139,7 +139,7 @@ const ContestChat = () => {
             {/* Messages */}
             <div className="card flex-1 overflow-y-auto p-4 mb-4">
                 {messages.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-gray-400">
+                    <div className="h-full flex items-center justify-center text-stone-500">
                         <div className="text-center">
                             <span className="text-4xl block mb-2">💬</span>
                             <p>No messages yet. Start the conversation!</p>
@@ -155,7 +155,7 @@ const ContestChat = () => {
                             return (
                                 <div key={msg.message_id}>
                                     {showDate && (
-                                        <div className="text-center text-xs text-gray-500 my-4">
+                                        <div className="text-center text-xs text-stone-400 my-4">
                                             {formatDate(msg.sent_at)}
                                         </div>
                                     )}
@@ -164,18 +164,18 @@ const ContestChat = () => {
                                             {!isMine && (
                                                 <p className={`text-xs mb-1 ${getRoleColor(msg.sender_role)}`}>
                                                     {msg.sender_name}
-                                                    <span className="text-gray-500 ml-1 capitalize">
+                                                    <span className="text-stone-400 ml-1 capitalize">
                                                         ({msg.sender_role})
                                                     </span>
                                                 </p>
                                             )}
                                             <div className={`rounded-2xl px-4 py-2 ${isMine
-                                                    ? 'bg-indigo-500 text-white rounded-br-sm'
-                                                    : 'bg-white/10 text-white rounded-bl-sm'
+                                                ? 'bg-teal-600 text-white rounded-br-sm'
+                                                : 'bg-stone-100 text-stone-900 rounded-bl-sm'
                                                 }`}>
                                                 <p className="break-words">{msg.message_text}</p>
                                             </div>
-                                            <p className={`text-xs text-gray-500 mt-1 ${isMine ? 'text-right' : ''}`}>
+                                            <p className={`text-xs text-stone-400 mt-1 ${isMine ? 'text-right' : ''}`}>
                                                 {formatTime(msg.sent_at)}
                                             </p>
                                         </div>

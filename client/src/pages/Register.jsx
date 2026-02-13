@@ -68,7 +68,7 @@ const Register = () => {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold gradient-text mb-2">Create Account</h1>
-                    <p className="text-gray-400">Join KIOT Contest Portal as a Student</p>
+                    <p className="text-stone-500">Join KIOT Contest Portal as a Student</p>
                 </div>
 
                 {/* Register Card */}
@@ -76,7 +76,7 @@ const Register = () => {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Name */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Full Name
                             </label>
                             <input
@@ -92,7 +92,7 @@ const Register = () => {
 
                         {/* Email */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Email
                             </label>
                             <input
@@ -108,7 +108,7 @@ const Register = () => {
 
                         {/* Register Number */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Register Number
                             </label>
                             <input
@@ -125,7 +125,7 @@ const Register = () => {
                         {/* Department, Year, Section */}
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Dept
                                 </label>
                                 <select
@@ -141,7 +141,7 @@ const Register = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Year
                                 </label>
                                 <select
@@ -157,7 +157,7 @@ const Register = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Section
                                 </label>
                                 <select
@@ -176,7 +176,7 @@ const Register = () => {
 
                         {/* Phone */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-stone-600 mb-2">
                                 Phone Number (Optional)
                             </label>
                             <input
@@ -192,7 +192,7 @@ const Register = () => {
                         {/* Password */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Password
                                 </label>
                                 <input
@@ -206,7 +206,7 @@ const Register = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-stone-600 mb-2">
                                     Confirm
                                 </label>
                                 <input
@@ -223,7 +223,7 @@ const Register = () => {
 
                         {/* Error Message */}
                         {error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
                                 {error}
                             </div>
                         )}
@@ -243,9 +243,9 @@ const Register = () => {
                     </form>
 
                     {/* Login Link */}
-                    <p className="mt-6 text-center text-sm text-gray-400">
+                    <p className="mt-6 text-center text-sm text-stone-500">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                        <Link to="/login" className="text-teal-600 hover:text-teal-700 font-medium">
                             Sign in here
                         </Link>
                     </p>

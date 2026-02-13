@@ -53,7 +53,7 @@ const ContestList = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
             </div>
         );
     }
@@ -64,7 +64,7 @@ const ContestList = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Contests</h1>
-                    <p className="text-gray-400 mt-1">Explore and participate in technical contests</p>
+                    <p className="text-stone-500 mt-1">Explore and participate in technical contests</p>
                 </div>
 
                 {user?.role === 'coordinator' && (
@@ -81,8 +81,8 @@ const ContestList = () => {
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${filter === f
-                                ? 'bg-indigo-500 text-white'
-                                : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-stone-50 text-stone-600 hover:bg-stone-100'
                             }`}
                     >
                         {f}
@@ -93,7 +93,7 @@ const ContestList = () => {
             {/* Contest Grid */}
             {filteredContests.length === 0 ? (
                 <div className="card p-12 text-center">
-                    <p className="text-gray-400 text-lg">No contests found</p>
+                    <p className="text-stone-500 text-lg">No contests found</p>
                 </div>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -112,38 +112,38 @@ const ContestList = () => {
                                     {contest.is_team_based ? (
                                         <span className="badge badge-primary">Team</span>
                                     ) : (
-                                        <span className="badge bg-white/10 text-gray-300">Individual</span>
+                                        <span className="badge bg-stone-100 text-stone-600">Individual</span>
                                     )}
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                                <h3 className="text-xl font-bold text-stone-900 mb-2 line-clamp-2">
                                     {contest.title}
                                 </h3>
 
                                 {contest.description && (
-                                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                                    <p className="text-stone-500 text-sm mb-4 line-clamp-2">
                                         {contest.description}
                                     </p>
                                 )}
 
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center text-gray-400">
+                                    <div className="flex items-center text-stone-500">
                                         <span className="mr-2">📍</span>
                                         {contest.location || 'TBD'}
                                     </div>
-                                    <div className="flex items-center text-gray-400">
+                                    <div className="flex items-center text-stone-500">
                                         <span className="mr-2">🗓️</span>
                                         {formatDate(contest.registration_deadline)}
                                     </div>
-                                    <div className="flex items-center text-gray-400">
+                                    <div className="flex items-center text-stone-500">
                                         <span className="mr-2">👥</span>
                                         {contest.registration_count || 0} registered
                                     </div>
                                 </div>
 
                                 {contest.is_team_based && (
-                                    <div className="mt-4 pt-4 border-t border-white/10">
-                                        <p className="text-xs text-gray-500">
+                                    <div className="mt-4 pt-4 border-t border-stone-200">
+                                        <p className="text-xs text-stone-400">
                                             Max team size: {contest.max_team_size}
                                         </p>
                                     </div>
