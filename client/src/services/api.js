@@ -73,6 +73,7 @@ export const mentorAPI = {
 
 // Chat API
 export const chatAPI = {
+    getMyGroups: () => api.get('/chat/my-groups'),
     getMessages: (contestId, params) => api.get(`/chat/${contestId}`, { params }),
     sendMessage: (contestId, data) => api.post(`/chat/${contestId}`, data),
     deleteMessage: (messageId) => api.delete(`/chat/message/${messageId}`)

@@ -4,6 +4,35 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// GET /api/chat/my-groups - Get contests where user has sent messages
+router.get('/my-groups', authenticate, (req, res) => {
+    try {
+        const { id, role } = req.user;
+
+        let senderColumn;
+        switch (role) {
+            case 'student': senderColumn = 'sender_student_id'; break;
+            case 'mentor': senderColumn = 'sender_mentor_id'; break;
+            case 'coordinator': senderColumn = 'sender_coordinator_id'; break;
+            default: return res.json([]);
+        }
+
+        const groups = db.prepare(`
+            SELECT DISTINCT cc.contest_id, c.title
+            FROM messages m
+            JOIN contest_chats cc ON m.chat_id = cc.chat_id
+            JOIN contests c ON cc.contest_id = c.contest_id
+            WHERE m.${senderColumn} = ?
+            ORDER BY MAX(m.sent_at) DESC
+        `).all(id);
+
+        res.json(groups);
+    } catch (error) {
+        console.error('Get my chat groups error:', error);
+        res.status(500).json({ error: 'Failed to fetch chat groups' });
+    }
+});
+
 // GET /api/chat/:contestId - Get messages for a contest
 router.get('/:contestId', authenticate, (req, res) => {
     try {
