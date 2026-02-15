@@ -18,11 +18,12 @@ router.get('/my-groups', authenticate, (req, res) => {
         }
 
         const groups = db.prepare(`
-            SELECT DISTINCT cc.contest_id, c.title
+            SELECT cc.contest_id, c.title
             FROM messages m
             JOIN contest_chats cc ON m.chat_id = cc.chat_id
             JOIN contests c ON cc.contest_id = c.contest_id
             WHERE m.${senderColumn} = ?
+            GROUP BY cc.contest_id, c.title
             ORDER BY MAX(m.sent_at) DESC
         `).all(id);
 

@@ -73,7 +73,7 @@ function App() {
           {/* Student Routes */}
           <Route path="/student" element={
             <ProtectedRoute roles={['student']}>
-              <Layout><StudentHome /></Layout>
+              <Layout><Navigate to="/contests" replace /></Layout>
             </ProtectedRoute>
           } />
 

@@ -76,6 +76,14 @@
     border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
+.login-brand-logo-img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
 .login-brand-title {
     font-size: 2rem;
     font-weight: 800;
@@ -1356,4 +1364,113 @@
     .hidden.md\:flex {
         display: flex !important;
     }
+}
+
+/* ============================================
+   CONTEST DETAIL REDESIGN
+   ============================================ */
+.contest-detail-banner {
+    height: 280px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    background: #f5f5f4;
+    position: relative;
+}
+
+.contest-detail-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.contest-detail-header-content {
+    margin-bottom: 2rem;
+}
+
+.contest-detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.contest-detail-tag {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+}
+
+.contest-detail-tag.organizer {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+.contest-detail-tag.platform {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.contest-detail-tag.team {
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+.contest-detail-tag.solo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.contest-detail-tag.dept {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
+.contest-detail-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    font-family: 'Sora', sans-serif;
+}
+
+.contest-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.contest-detail-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.contest-detail-meta-item svg {
+    color: var(--color-text-muted);
+    width: 18px;
+    height: 18px;
+}
+
+.contest-detail-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 16px;
+    background: #fff7ed;
+    color: #c2410c;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 1px solid #ffedd5;
 }

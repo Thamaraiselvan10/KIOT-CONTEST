@@ -19,6 +19,7 @@ const ContestDetail = () => {
     const [copied, setCopied] = useState(false);
     const [registrations, setRegistrations] = useState([]);
     const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+    const [showRegisterConfirm, setShowRegisterConfirm] = useState(false);
 
     useEffect(() => {
         loadContest();
@@ -69,6 +70,10 @@ const ContestDetail = () => {
         } finally {
             setLoadingRegistrations(false);
         }
+    };
+
+    const handleRegisterClick = () => {
+        setShowRegisterConfirm(true);
     };
 
     const handleRegister = async () => {
@@ -154,6 +159,18 @@ const ContestDetail = () => {
         return new Date() < new Date(contest.registration_deadline);
     };
 
+    const getTimeLeft = (deadline) => {
+        const now = new Date();
+        const end = new Date(deadline);
+        const diff = end - now;
+        if (diff <= 0) return 'Closed';
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        if (days > 0) return `${days}d ${hours}h left`;
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h ${mins}m left`;
+    };
+
     const handleShareURL = async () => {
         const url = window.location.href;
         try {
@@ -208,75 +225,135 @@ const ContestDetail = () => {
                 </div>
             </div>
 
-            {/* Contest Header */}
-            <div className="card p-8 mb-6">
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-3">
-                            <span className={`badge ${status.class}`}>{status.label}</span>
-                            {contest.is_team_based ? (
-                                <span className="badge badge-primary">Team Based</span>
-                            ) : (
-                                <span className="badge bg-stone-100 text-stone-600">Individual</span>
-                            )}
+            {/* Registration Confirmation Modal */}
+            {showRegisterConfirm && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)' }}>
+                    <div className="card" style={{ maxWidth: '400px', width: '90%', padding: '24px' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0fdfa', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-stone-900">Confirm Registration</h3>
+                            <p className="text-sm text-stone-500 mt-2">Are you sure you want to register for <b>{contest.title}</b>?</p>
                         </div>
-                        <h1 className="text-3xl font-bold text-stone-900">{contest.title}</h1>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <button
+                                onClick={() => setShowRegisterConfirm(false)}
+                                className="px-5 py-2 text-sm font-medium rounded-lg text-stone-600 hover:bg-stone-100 transition-all"
+                                style={{ border: '1px solid #e7e5e4' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => { setShowRegisterConfirm(false); handleRegister(); }}
+                                className="px-5 py-2 text-sm font-medium rounded-lg text-white transition-all bg-teal-600 hover:bg-teal-700"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Contest Header - Redesigned */}
+            <div className="card p-6 mb-6">
+                {/* Banner */}
+                {contest.image_url && (
+                    <div className="contest-detail-banner">
+                        <img src={contest.image_url} alt={contest.title} />
+                    </div>
+                )}
+
+                <div className="contest-detail-header-content">
+                    {/* Tags */}
+                    <div className="contest-detail-tags">
+                        {contest.organizer && (
+                            <span className="contest-detail-tag organizer">{contest.organizer}</span>
+                        )}
+                        {contest.platform && (
+                            <span className="contest-detail-tag platform">{contest.platform}</span>
+                        )}
+                        <span className={`contest-detail-tag ${contest.is_team_based ? 'team' : 'solo'}`}>
+                            {contest.is_team_based ? `👥 Team (max ${contest.max_team_size})` : '👤 Solo'}
+                        </span>
+                        {contest.department && (
+                            <span className="contest-detail-tag dept">{contest.department}</span>
+                        )}
+                        {(myRegistration || myTeam) && (
+                            <span className="contest-detail-tag" style={{ background: '#d1fae5', color: '#065f46' }}>
+                                ✓ Registered
+                            </span>
+                        )}
                     </div>
 
-                    {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && (
-                        <div className="flex gap-3">
-                            {contest.is_team_based ? (
-                                <button
-                                    onClick={() => setShowTeamForm(true)}
-                                    className="btn-primary"
-                                >
-                                    Create Team
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleRegister}
-                                    disabled={registering}
-                                    className="btn-primary"
-                                >
-                                    {registering ? 'Registering...' : 'Register Now'}
-                                </button>
+                    {/* Title */}
+                    <h1 className="contest-detail-title">{contest.title}</h1>
+
+                    {/* Meta */}
+                    <div className="contest-detail-meta">
+                        {contest.location && (
+                            <span className="contest-detail-meta-item">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                                {contest.location}
+                            </span>
+                        )}
+                        <span className="contest-detail-meta-item">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                            Reg: {formatDate(contest.registration_deadline)}
+                        </span>
+                        <span className="contest-detail-meta-item">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                            Due: {formatDate(contest.submission_deadline)}
+                        </span>
+                    </div>
+
+                    {/* Timer & Actions */}
+                    <div className="flex flex-wrap items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="contest-detail-timer">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                {getTimeLeft(contest.registration_deadline)}
+                            </div>
+
+                            {(user?.role === 'coordinator' || user?.role === 'mentor') && (
+                                <div className="text-stone-500 font-medium text-sm">
+                                    {contest.registration_count || 0} registered
+                                </div>
                             )}
                         </div>
-                    )}
 
-                    {(myRegistration || myTeam) && (
-                        <div className="badge badge-success text-base px-4 py-2">
-                            ✓ Registered
-                        </div>
-                    )}
+                        {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && (
+                            <div className="flex gap-3">
+                                {contest.is_team_based ? (
+                                    <button
+                                        onClick={() => setShowTeamForm(true)}
+                                        className="btn-primary px-6 py-2.5"
+                                    >
+                                        Create Team
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleRegisterClick}
+                                        disabled={registering}
+                                        className="btn-primary px-6 py-2.5"
+                                    >
+                                        {registering ? 'Registering...' : 'Register Now'}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Contest Image */}
-                {contest.image_url && (
-                    <div className="mb-8 rounded-xl overflow-hidden border border-stone-200 bg-stone-100">
-                        <img
-                            src={contest.image_url}
-                            alt={contest.title}
-                            className="w-full h-auto object-contain max-h-[500px] mx-auto"
-                        />
-                    </div>
-                )}
-
-                {/* Messages */}
-                {error && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 mb-4">
-                        {error}
-                    </div>
-                )}
-                {success && (
-                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 mb-4">
-                        {success}
-                    </div>
-                )}
-
-                {/* Description */}
+                {/* Description - Moved below header content but inside card */}
                 {contest.description && (
-                    <div className="mb-8">
+                    <div className="pt-6 border-t border-stone-200">
                         <h3 className="text-lg font-bold text-stone-900 mb-2">About the Contest</h3>
                         <p className="text-stone-600 leading-relaxed whitespace-pre-wrap">{contest.description}</p>
                     </div>
@@ -284,7 +361,7 @@ const ContestDetail = () => {
 
                 {/* External Links */}
                 {(contest.external_reg_link || contest.submission_link) && (
-                    <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {contest.external_reg_link && (
                             <a
                                 href={contest.external_reg_link}
@@ -313,81 +390,6 @@ const ContestDetail = () => {
                                 </div>
                             </a>
                         )}
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        {contest.organizer && (
-                            <div className="flex items-center">
-                                <span className="text-2xl mr-3">🏆</span>
-                                <div>
-                                    <p className="text-xs text-stone-400 uppercase tracking-wide">Organizer</p>
-                                    <p className="text-stone-900 font-medium">{contest.organizer}</p>
-                                </div>
-                            </div>
-                        )}
-                        {contest.platform && (
-                            <div className="flex items-center">
-                                <span className="text-2xl mr-3">🌐</span>
-                                <div>
-                                    <p className="text-xs text-stone-400 uppercase tracking-wide">Platform</p>
-                                    <p className="text-stone-900 font-medium">{contest.platform}</p>
-                                </div>
-                            </div>
-                        )}
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">📍</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Location</p>
-                                <p className="text-stone-900 font-medium">{contest.location || 'Online / External'}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">🏢</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Department</p>
-                                <p className="text-stone-900 font-medium">{contest.department || 'All Departments'}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">👤</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Added By</p>
-                                <p className="text-stone-900 font-medium">{contest.coordinator_name}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">🗓️</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Registration Deadline</p>
-                                <p className="text-stone-900 font-medium">{formatDate(contest.registration_deadline)}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">⏰</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Submission Deadline</p>
-                                <p className="text-stone-900 font-medium">{formatDate(contest.submission_deadline)}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">👥</span>
-                            <div>
-                                <p className="text-xs text-stone-400 uppercase tracking-wide">Registrations</p>
-                                <p className="text-stone-900 font-medium">{contest.registration_count} participants</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {contest.is_team_based && (
-                    <div className="mt-6 pt-6 border-t border-stone-200">
-                        <p className="text-stone-500">
-                            <strong className="text-stone-900">Team Size:</strong> Up to {contest.max_team_size} members
-                        </p>
                     </div>
                 )}
             </div>
@@ -520,7 +522,7 @@ const ContestDetail = () => {
                             <p className="text-stone-500 text-sm">Register now to join this contest</p>
                         </div>
                         <button
-                            onClick={handleRegister}
+                            onClick={handleRegisterClick}
                             disabled={registering}
                             className="btn-primary px-8 py-3 text-base"
                         >

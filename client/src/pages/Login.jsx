@@ -27,7 +27,7 @@ const Login = () => {
                     navigate('/mentor');
                     break;
                 default:
-                    navigate('/student');
+                    navigate('/contests');
             }
         } catch (err) {
             setError(err.response?.data?.error || 'Login failed. Please try again.');
@@ -53,7 +53,7 @@ const Login = () => {
                     navigate('/mentor');
                     break;
                 default:
-                    navigate('/student');
+                    navigate('/contests');
             }
         } catch (err) {
             setError('Demo login failed. Please ensure backend is running.');
@@ -108,7 +108,7 @@ const Login = () => {
                 <div className="login-orb login-orb-3" />
 
                 <div className="login-brand-content">
-                    <div className="login-brand-logo">K</div>
+                    <img src="/clg-logo.png" alt="KIOT Logo" className="login-brand-logo-img" />
                     <h1 className="login-brand-title">KIOT Contest Portal</h1>
                     <p className="login-brand-subtitle">
                         Your all-in-one platform for managing, participating, and excelling in contests.

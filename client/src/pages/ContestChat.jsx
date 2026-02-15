@@ -13,6 +13,7 @@ const ContestChat = () => {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+    const [isDismissed, setIsDismissed] = useState(false);
     const messagesEndRef = useRef(null);
     const pollInterval = useRef(null);
 
@@ -35,6 +36,15 @@ const ContestChat = () => {
         scrollToBottom();
     }, [messages]);
 
+    // Check dismissal status
+    useEffect(() => {
+        if (user && id) {
+            const dismissedKey = `chat_dismissed_${user.id || user.email}`;
+            const dismissed = JSON.parse(localStorage.getItem(dismissedKey) || '[]');
+            setIsDismissed(dismissed.includes(Number(id)));
+        }
+    }, [id, user]);
+
     // Mark chat as seen whenever messages update
     useEffect(() => {
         if (messages.length > 0 && user) {
@@ -45,6 +55,14 @@ const ContestChat = () => {
             localStorage.setItem(seenKey, JSON.stringify(seen));
         }
     }, [messages, id, user]);
+
+    const handleAddGroup = () => {
+        const dismissedKey = `chat_dismissed_${user.id || user.email}`;
+        const dismissed = JSON.parse(localStorage.getItem(dismissedKey) || '[]');
+        const updatedDismissed = dismissed.filter(chatId => chatId !== Number(id));
+        localStorage.setItem(dismissedKey, JSON.stringify(updatedDismissed));
+        setIsDismissed(false);
+    };
 
     const handleRemoveGroup = () => {
         const dismissedKey = `chat_dismissed_${user.id || user.email}`;
@@ -92,6 +110,16 @@ const ContestChat = () => {
         setSending(true);
         try {
             await chatAPI.sendMessage(id, { message_text: newMessage.trim() });
+
+            // If this chat was removed, un-remove it (make it visible again)
+            const dismissedKey = `chat_dismissed_${user.id || user.email}`;
+            const dismissed = JSON.parse(localStorage.getItem(dismissedKey) || '[]');
+            if (dismissed.includes(Number(id))) {
+                const updatedDismissed = dismissed.filter(chatId => chatId !== Number(id));
+                localStorage.setItem(dismissedKey, JSON.stringify(updatedDismissed));
+                setIsDismissed(false);
+            }
+
             setNewMessage('');
             await loadMessages();
         } catch (error) {
@@ -156,12 +184,21 @@ const ContestChat = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-stone-500">{messages.length} messages</span>
-                        <button
-                            onClick={() => setShowRemoveConfirm(true)}
-                            className="text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all font-medium"
-                        >
-                            Remove Group
-                        </button>
+                        {isDismissed ? (
+                            <button
+                                onClick={handleAddGroup}
+                                className="text-sm text-teal-600 hover:text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg transition-all font-medium"
+                            >
+                                Add Chat
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setShowRemoveConfirm(true)}
+                                className="text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all font-medium"
+                            >
+                                Remove Group
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

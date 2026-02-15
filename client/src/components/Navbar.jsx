@@ -156,7 +156,7 @@ const Navbar = () => {
                 return '/mentor';
             case 'student':
             default:
-                return '/student';
+                return '/contests';
         }
     };
 
@@ -174,9 +174,7 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to={user ? getDashboardLink() : '/'} className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-primary)' }}>
-                            <span className="text-xl font-bold text-white">K</span>
-                        </div>
+                        <img src="/clg-logo.png" alt="KIOT" className="w-12 h-12 object-contain" />
                         <span className="text-xl font-bold gradient-text">KIOT Contest</span>
                     </Link>
 
