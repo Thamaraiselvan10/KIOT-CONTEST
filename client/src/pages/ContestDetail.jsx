@@ -25,11 +25,16 @@ const ContestDetail = () => {
         loadContest();
         if (user?.role === 'student') {
             checkRegistration();
+            loadRegistrations(); // Load registrations for students too
         }
         if (user?.role === 'coordinator' || user?.role === 'mentor') {
             loadRegistrations();
         }
     }, [id, user]);
+
+    // ... (rest of the file until the return statement)
+
+
 
     const loadContest = async () => {
         try {
@@ -208,6 +213,11 @@ const ContestDetail = () => {
                     ← Back to Contests
                 </Link>
                 <div className="flex items-center gap-3">
+                    {(myRegistration || myTeam) && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold">
+                            ✓ Registered
+                        </div>
+                    )}
                     {(user?.role === 'coordinator' || user?.role === 'mentor') && contest && (
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -413,6 +423,41 @@ const ContestDetail = () => {
                 </div>
             )}
 
+            {/* Registered Students Table */}
+            <div className="card p-6 mt-6">
+                <h3 className="text-xl font-bold text-stone-900 mb-4">Registered Students ({registrations.length})</h3>
+                {loadingRegistrations ? (
+                    <p className="text-stone-500">Loading registrations...</p>
+                ) : registrations.length === 0 ? (
+                    <p className="text-stone-500">No students registered yet.</p>
+                ) : (
+                    <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table className="w-full text-sm">
+                            <thead className="sticky top-0 bg-white">
+                                <tr className="border-b border-stone-200">
+                                    <th className="text-left p-3 text-stone-500 font-medium">Name</th>
+                                    <th className="text-left p-3 text-stone-500 font-medium">Register No</th>
+                                    <th className="text-left p-3 text-stone-500 font-medium">Year</th>
+                                    <th className="text-left p-3 text-stone-500 font-medium">Department</th>
+                                    <th className="text-left p-3 text-stone-500 font-medium">Section</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {registrations.map((reg) => (
+                                    <tr key={reg.registration_id} className="border-b border-stone-100 hover:bg-stone-50">
+                                        <td className="p-3 text-stone-900 font-medium">{reg.student_name}</td>
+                                        <td className="p-3 text-stone-600">{reg.register_no || '-'}</td>
+                                        <td className="p-3 text-stone-600">{reg.year || '-'}</td>
+                                        <td className="p-3 text-stone-600">{reg.department || '-'}</td>
+                                        <td className="p-3 text-stone-600">{reg.section || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
             {/* Create Team Form */}
             {showTeamForm && (
                 <div className="card p-6 mb-6 animate-fade-in">
@@ -441,7 +486,7 @@ const ContestDetail = () => {
             )}
 
             {/* Teams Section */}
-            {contest.is_team_based && contest.teams && contest.teams.length > 0 && (
+            {Boolean(contest.is_team_based) && contest.teams && contest.teams.length > 0 && (
                 <div className="card p-6">
                     <h3 className="text-xl font-bold text-stone-900 mb-4">Teams ({contest.teams.length})</h3>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -474,44 +519,7 @@ const ContestDetail = () => {
                 </div>
             )}
 
-            {/* Registered Students Table - For Coordinators/Mentors */}
-            {(user?.role === 'coordinator' || user?.role === 'mentor') && (
-                <div className="card p-6 mt-6">
-                    <h3 className="text-xl font-bold text-stone-900 mb-4">Registered Students ({registrations.length})</h3>
-                    {loadingRegistrations ? (
-                        <p className="text-stone-500">Loading registrations...</p>
-                    ) : registrations.length === 0 ? (
-                        <p className="text-stone-500">No students registered yet.</p>
-                    ) : (
-                        <div className="overflow-x-auto max-h-96 overflow-y-auto">
-                            <table className="w-full text-sm">
-                                <thead className="sticky top-0 bg-white">
-                                    <tr className="border-b border-stone-200">
-                                        <th className="text-left p-3 text-stone-500 font-medium">Name</th>
-                                        <th className="text-left p-3 text-stone-500 font-medium">Register No</th>
-                                        <th className="text-left p-3 text-stone-500 font-medium">Department</th>
-                                        <th className="text-left p-3 text-stone-500 font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {registrations.map((reg) => (
-                                        <tr key={reg.registration_id} className="border-b border-stone-100 hover:bg-stone-50">
-                                            <td className="p-3 text-stone-900">{reg.student_name}</td>
-                                            <td className="p-3 text-stone-600">{reg.register_no || 'N/A'}</td>
-                                            <td className="p-3 text-stone-600">{reg.department || 'N/A'}</td>
-                                            <td className="p-3">
-                                                <span className={`badge ${reg.submitted ? 'badge-success' : 'badge-warning'}`}>
-                                                    {reg.submitted ? 'Submitted' : 'Registered'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            )}
+
 
             {/* Mark as Registered Button - For students who are not yet registered */}
             {user?.role === 'student' && isRegistrationOpen() && !myRegistration && !myTeam && !contest.is_team_based && (

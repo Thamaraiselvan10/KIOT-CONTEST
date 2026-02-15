@@ -88,7 +88,7 @@ router.get('/my', authenticate, authorize('student'), (req, res) => {
 });
 
 // GET /api/registrations/contest/:id - Get all registrations for a contest (Coordinator/Mentor)
-router.get('/contest/:id', authenticate, authorize('coordinator', 'mentor'), (req, res) => {
+router.get('/contest/:id', authenticate, authorize('coordinator', 'mentor', 'student'), (req, res) => {
     try {
         const { id } = req.params;
 

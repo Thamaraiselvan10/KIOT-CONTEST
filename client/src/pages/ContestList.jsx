@@ -9,7 +9,30 @@ const ContestList = () => {
     const [filter, setFilter] = useState('open');
     const [searchQuery, setSearchQuery] = useState('');
     const [myRegistrations, setMyRegistrations] = useState(new Set());
+    const [registeringId, setRegisteringId] = useState(null);
     const { user } = useAuth();
+
+    const handleQuickRegister = async (e, contestId, contestTitle) => {
+        e.preventDefault(); // Prevent navigation
+        if (!window.confirm(`Are you sure you want to register for "${contestTitle}"?`)) return;
+
+        setRegisteringId(contestId);
+        try {
+            await registrationAPI.register({ contest_id: contestId });
+            // Refresh registrations
+            const regRes = await registrationAPI.getMy();
+            const regIds = new Set();
+            regRes.data.forEach(r => regIds.add(r.contest_id));
+            setMyRegistrations(regIds);
+            // Optional: Show toast or alert
+            alert('Successfully registered!');
+        } catch (error) {
+            console.error('Registration failed:', error);
+            alert(error.response?.data?.error || 'Registration failed');
+        } finally {
+            setRegisteringId(null);
+        }
+    };
 
     useEffect(() => {
         loadContests();
@@ -206,17 +229,24 @@ const ContestList = () => {
                                     {/* Footer */}
                                     <div className="student-card-footer">
                                         <div className="student-card-deadline">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <circle cx="12" cy="12" r="10" />
-                                                <polyline points="12 6 12 12 16 14" />
-                                            </svg>
-                                            {/* We don't have getTimeLeft in this component scope, so we use formatted date or similar. 
-                                                Actually StudentHome calculates time left or similar. 
-                                                Let's stick to 'Due' date or just remove if not needed.
-                                                StudentHome uses: <span>{getTimeLeft(contest.registration_deadline)}</span>
-                                                I need to add the helper or just use a simple label.
-                                            */}
-                                            <span>Deadline: {formatDate(contest.registration_deadline).split(',')[0]}</span>
+                                            {/* Register Button for Student */}
+                                            {user?.role === 'student' && !isRegistered && getStatus(contest).label === 'Open' && !contest.is_team_based ? (
+                                                <button
+                                                    onClick={(e) => handleQuickRegister(e, contest.contest_id, contest.title)}
+                                                    disabled={registeringId === contest.contest_id}
+                                                    className="px-4 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-colors shadow-sm"
+                                                >
+                                                    {registeringId === contest.contest_id ? 'Wait...' : 'Register'}
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <polyline points="12 6 12 12 16 14" />
+                                                    </svg>
+                                                    <span>Deadline: {formatDate(contest.registration_deadline).split(',')[0]}</span>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="student-card-registrants">
                                             {contest.registration_count || 0} registered
