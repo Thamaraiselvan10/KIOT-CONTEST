@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 // Pages
 import Login from './pages/Login';
@@ -21,6 +22,7 @@ const Layout = ({ children }) => (
   <>
     <Navbar />
     <main>{children}</main>
+    <Footer />
   </>
 );
 

@@ -55,9 +55,9 @@ async function seedDemoData() {
     const past = (days) => new Date(now.getTime() - days * 86400000).toISOString();
 
     const contests = [
-        ['AI Innovation Challenge', 'Build AI models for social good.', 'Online', 'AI&DS', future(14), future(30), 1, 3, 'https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 1, 1],
-        ['Web Design War', 'Create the best landing page.', 'CSE Lab 2', 'CSE', future(5), future(10), 0, 1, 'https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 1, 1],
-        ['Circuit Debugging', 'Fix the broken circuits.', 'ECE Hardware Lab', 'ECE', past(2), past(1), 0, 1, 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 1, 1] // Ended
+        ['AI Innovation Challenge', 'Build AI models for social good.', 'Online', 'AI&DS', future(14), future(30), 1, 3, 'https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 'Online', 'Technology', 'Team', 1, 1, 1],
+        ['Web Design War', 'Create the best landing page.', 'CSE Lab 2', 'CSE', future(5), future(10), 0, 1, 'https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 'Offline', 'Design', 'Individual', 0, 1, 1],
+        ['Circuit Debugging', 'Fix the broken circuits.', 'ECE Hardware Lab', 'ECE', past(2), past(1), 0, 1, 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1350&q=80', null, 'http://example.com', 'Offline', 'Electronics', 'Individual', 0, 1, 1] // Ended
     ];
 
     contests.forEach(c => {
@@ -65,11 +65,55 @@ async function seedDemoData() {
         const exists = db.exec(`SELECT 1 FROM contests WHERE title = '${c[0]}'`);
         if (exists.length === 0) {
             db.run(`
-                INSERT INTO contests (title, description, location, department, registration_deadline, submission_deadline, is_team_based, max_team_size, image_url, external_reg_link, submission_link, created_by, mentor_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO contests (title, description, location, department, registration_deadline, submission_deadline, is_team_based, max_team_size, image_url, external_reg_link, submission_link, mode, industry, participation_type, featured, created_by, mentor_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, c);
         }
     });
+
+    // Add prizes, schedule, themes, FAQs for demo contests
+    console.log('  - Adding prizes, schedule, themes, FAQs...');
+
+    // Get all contest IDs
+    const allContestIds = [];
+    const allCStmt = db.prepare("SELECT contest_id, title FROM contests");
+    while (allCStmt.step()) allContestIds.push(allCStmt.getAsObject());
+    allCStmt.free();
+
+    // Add demo data for AI Innovation Challenge (likely 3rd contest)
+    const aiContest = allContestIds.find(c => c.title === 'AI Innovation Challenge');
+    if (aiContest) {
+        const aid = aiContest.contest_id;
+        // Prizes
+        db.run(`INSERT OR IGNORE INTO contest_prizes (contest_id, title, amount, prize_type, winner_count, sort_order) VALUES (?, ?, ?, ?, ?, ?)`,
+            [aid, 'Winner', '₹ 1,00,000', 'Cash Prize', 1, 1]);
+        db.run(`INSERT OR IGNORE INTO contest_prizes (contest_id, title, amount, prize_type, winner_count, sort_order) VALUES (?, ?, ?, ?, ?, ?)`,
+            [aid, 'Runners Up', '₹ 50,000', 'Cash Prize', 1, 2]);
+        db.run(`INSERT OR IGNORE INTO contest_prizes (contest_id, title, amount, prize_type, winner_count, sort_order) VALUES (?, ?, ?, ?, ?, ?)`,
+            [aid, '2nd Runner Up', '₹ 25,000', 'Cash Prize', 1, 3]);
+
+        // Schedule
+        db.run(`INSERT OR IGNORE INTO contest_schedule (contest_id, title, description, round_type, mode, start_date, end_date, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [aid, 'Registration', 'Register and submit your team details.', 'Preliminary', 'Online', future(14), future(21), 1]);
+        db.run(`INSERT OR IGNORE INTO contest_schedule (contest_id, title, description, round_type, mode, start_date, end_date, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [aid, 'Idea Submission', 'Submit your AI model idea and architecture.', 'Elimination Round', 'Online', future(21), future(25), 2]);
+        db.run(`INSERT OR IGNORE INTO contest_schedule (contest_id, title, description, round_type, mode, start_date, end_date, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [aid, 'Final Presentation', 'Demo your working AI model to the judges.', 'Final Round', 'Online', future(28), future(30), 3]);
+
+        // Themes
+        db.run(`INSERT OR IGNORE INTO contest_themes (contest_id, title, description, sort_order) VALUES (?, ?, ?, ?)`,
+            [aid, 'AI for Education', 'Build AI tools that enhance learning experiences for students.', 1]);
+        db.run(`INSERT OR IGNORE INTO contest_themes (contest_id, title, description, sort_order) VALUES (?, ?, ?, ?)`,
+            [aid, 'AI for Healthcare', 'Develop AI solutions addressing healthcare challenges.', 2]);
+
+        // FAQs
+        db.run(`INSERT OR IGNORE INTO contest_faqs (contest_id, question, answer, sort_order) VALUES (?, ?, ?, ?)`,
+            [aid, 'What AI frameworks can we use?', 'You can use any AI/ML framework: TensorFlow, PyTorch, scikit-learn, etc.', 1]);
+        db.run(`INSERT OR IGNORE INTO contest_faqs (contest_id, question, answer, sort_order) VALUES (?, ?, ?, ?)`,
+            [aid, 'Is cloud computing allowed?', 'Yes, you may use cloud services like Google Colab, AWS, or Azure for training.', 2]);
+        db.run(`INSERT OR IGNORE INTO contest_faqs (contest_id, question, answer, sort_order) VALUES (?, ?, ?, ?)`,
+            [aid, 'What is the team size?', 'Teams of 2-3 members are allowed. All must be students.', 3]);
+    }
 
     // 3. Add Registrations
     console.log('  - Adding registrations...');

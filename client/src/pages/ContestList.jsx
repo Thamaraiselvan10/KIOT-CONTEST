@@ -1,263 +1,125 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { contestAPI, registrationAPI, teamAPI } from '../services/api';
+import { useState, useEffect, useMemo } from 'react';
+import { contestAPI, registrationAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import HeroSection from '../components/HeroSection';
+import FilterBar from '../components/FilterBar';
+import ContestCard from '../components/ContestCard';
 
 const ContestList = () => {
     const [contests, setContests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('open');
+    const [error, setError] = useState('');
+    const [activeFilter, setActiveFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('date');
     const [searchQuery, setSearchQuery] = useState('');
-    const [myRegistrations, setMyRegistrations] = useState(new Set());
-    const [registeringId, setRegisteringId] = useState(null);
+    const [visibleCount, setVisibleCount] = useState(8);
     const { user } = useAuth();
-
-    const handleQuickRegister = async (e, contestId, contestTitle) => {
-        e.preventDefault(); // Prevent navigation
-        if (!window.confirm(`Are you sure you want to register for "${contestTitle}"?`)) return;
-
-        setRegisteringId(contestId);
-        try {
-            await registrationAPI.register({ contest_id: contestId });
-            // Refresh registrations
-            const regRes = await registrationAPI.getMy();
-            const regIds = new Set();
-            regRes.data.forEach(r => regIds.add(r.contest_id));
-            setMyRegistrations(regIds);
-            // Optional: Show toast or alert
-            alert('Successfully registered!');
-        } catch (error) {
-            console.error('Registration failed:', error);
-            alert(error.response?.data?.error || 'Registration failed');
-        } finally {
-            setRegisteringId(null);
-        }
-    };
 
     useEffect(() => {
         loadContests();
-        if (user && user.role === 'student') {
-            checkRegistrations();
-        }
-    }, [user]);
+    }, []);
 
     const loadContests = async () => {
         try {
+            setLoading(true);
             const res = await contestAPI.getAll();
             setContests(res.data);
-        } catch (error) {
-            console.error('Failed to load contests:', error);
+        } catch (err) {
+            setError('Failed to load contests');
         } finally {
             setLoading(false);
         }
     };
 
-    const checkRegistrations = async () => {
-        try {
-            const [regRes, teamRes] = await Promise.all([
-                registrationAPI.getMy(),
-                teamAPI.getMy()
-            ]);
-
-            const regIds = new Set();
-            regRes.data.forEach(r => regIds.add(r.contest_id));
-            teamRes.data.forEach(t => regIds.add(t.contest_id));
-
-            setMyRegistrations(regIds);
-        } catch (error) {
-            console.error('Failed to load registrations:', error);
-        }
-    };
-
-    const getStatus = (contest) => {
+    const filteredContests = useMemo(() => {
         const now = new Date();
-        const regDeadline = new Date(contest.registration_deadline);
-        const subDeadline = new Date(contest.submission_deadline);
+        let result = [...contests];
 
-        if (now < regDeadline) return { label: 'Open', class: 'badge-success' };
-        if (now < subDeadline) return { label: 'Ongoing', class: 'badge-warning' };
-        return { label: 'Ended', class: 'badge-danger' };
-    };
+        // Filter
+        if (activeFilter === 'active') {
+            result = result.filter(c => new Date(c.registration_deadline) > now);
+        } else if (activeFilter === 'past') {
+            result = result.filter(c => new Date(c.submission_deadline) < now);
+        } else if (activeFilter === 'featured') {
+            result = result.filter(c => c.featured);
+        }
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+        // Search
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(c =>
+                c.title.toLowerCase().includes(q) ||
+                c.description?.toLowerCase().includes(q) ||
+                c.organizer?.toLowerCase().includes(q) ||
+                c.department?.toLowerCase().includes(q)
+            );
+        }
 
-    const filteredContests = contests
-        .filter((c) => {
-            const status = getStatus(c).label.toLowerCase();
-            return status === filter;
-        })
-        .filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        // Sort
+        if (sortBy === 'date') {
+            result.sort((a, b) => new Date(b.registration_deadline) - new Date(a.registration_deadline));
+        } else if (sortBy === 'title') {
+            result.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sortBy === 'participants') {
+            result.sort((a, b) => (b.registration_count || 0) - (a.registration_count || 0));
+        }
+
+        return result;
+    }, [contests, activeFilter, sortBy, searchQuery]);
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+            <div className="page-loading">
+                <div className="loading-spinner"></div>
+                <p>Loading contests...</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold gradient-text">Contests</h1>
-                    <p className="text-stone-500 mt-1">Explore and participate in technical contests</p>
-                </div>
+        <div className="programs-page">
+            <HeroSection contests={contests} />
 
-                {user?.role === 'coordinator' && (
-                    <Link to="/coordinator/contests/new" className="btn-primary">
-                        + Create Contest
-                    </Link>
+            <div className="programs-content">
+                <FilterBar
+                    contests={contests}
+                    activeFilter={activeFilter}
+                    onFilter={setActiveFilter}
+                    sortBy={sortBy}
+                    onSort={setSortBy}
+                    searchQuery={searchQuery}
+                    onSearch={setSearchQuery}
+                />
+
+                {error && <div className="error-banner">{error}</div>}
+
+                {filteredContests.length === 0 ? (
+                    <div className="empty-state-card">
+                        <h3>No contests found</h3>
+                        <p>Try adjusting your filters or check back later.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="contest-grid">
+                            {filteredContests.slice(0, visibleCount).map(contest => (
+                                <ContestCard key={contest.contest_id} contest={contest} />
+                            ))}
+                        </div>
+
+                        {visibleCount < filteredContests.length && (
+                            <div className="view-more-wrapper">
+                                <button
+                                    className="view-more-btn"
+                                    onClick={() => setVisibleCount(prev => prev + 8)}
+                                >
+                                    View More
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
-
-            {/* Search Bar */}
-            <div className="relative mb-6">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                </span>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search contests..."
-                    className="input w-full pl-11"
-                />
-            </div>
-
-            {/* Filters */}
-            <div className="flex gap-2 mb-6">
-                {['open', 'ongoing', 'ended'].map((f) => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${filter === f
-                            ? 'bg-teal-600 text-white'
-                            : 'bg-stone-50 text-stone-600 hover:bg-stone-100'
-                            }`}
-                    >
-                        {f}
-                    </button>
-                ))}
-            </div>
-
-            {/* Contest Grid */}
-            {filteredContests.length === 0 ? (
-                <div className="card p-12 text-center">
-                    <p className="text-stone-500 text-lg">No contests found</p>
-                </div>
-            ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredContests.map((contest) => {
-                        const isRegistered = myRegistrations.has(contest.contest_id);
-
-                        return (
-                            <Link
-                                key={contest.contest_id}
-                                to={`/contests/${contest.contest_id}`}
-                                className={`student-contest-card block transition-all ${isRegistered ? 'ring-2 ring-teal-500 ring-offset-2' : ''}`}
-                            >
-                                {/* Banner */}
-                                {contest.image_url && (
-                                    <div className="student-card-banner">
-                                        <img src={contest.image_url} alt="" />
-                                        {isRegistered && (
-                                            <div className="absolute top-2 right-2 badge badge-success shadow-md">
-                                                ✓ Registered
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div className="student-card-body">
-                                    {/* Tags row */}
-                                    <div className="student-card-tags">
-                                        {/* Status Badge */}
-                                        <span className={`student-status-badge ${getStatus(contest).class.replace('badge-', 'status-').toLowerCase()}`}>
-                                            {getStatus(contest).label}
-                                        </span>
-
-                                        {contest.organizer && (
-                                            <span className="student-tag organizer">{contest.organizer}</span>
-                                        )}
-                                        {contest.platform && (
-                                            <span className="student-tag platform">{contest.platform}</span>
-                                        )}
-                                        <span className={`student-tag ${contest.is_team_based ? 'team' : 'solo'}`}>
-                                            {contest.is_team_based ? `👥 Team (max ${contest.max_team_size})` : '👤 Solo'}
-                                        </span>
-                                        {contest.department && (
-                                            <span className="student-tag dept">{contest.department}</span>
-                                        )}
-                                    </div>
-
-                                    {/* Title */}
-                                    <h3 className="student-card-title">{contest.title}</h3>
-
-                                    {/* Description */}
-                                    {contest.description && (
-                                        <p className="student-card-desc">{contest.description}</p>
-                                    )}
-
-                                    {/* Meta info row */}
-                                    <div className="student-card-meta">
-                                        {contest.location && (
-                                            <span className="student-card-meta-item">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                                                {contest.location}
-                                            </span>
-                                        )}
-                                        <span className="student-card-meta-item">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                                            Reg: {formatDate(contest.registration_deadline)}
-                                        </span>
-                                        <span className="student-card-meta-item">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                                            Due: {formatDate(contest.submission_deadline)}
-                                        </span>
-                                    </div>
-
-                                    {/* Footer */}
-                                    <div className="student-card-footer">
-                                        <div className="student-card-deadline">
-                                            {/* Register Button for Student */}
-                                            {user?.role === 'student' && !isRegistered && getStatus(contest).label === 'Open' && !contest.is_team_based ? (
-                                                <button
-                                                    onClick={(e) => handleQuickRegister(e, contest.contest_id, contest.title)}
-                                                    disabled={registeringId === contest.contest_id}
-                                                    className="px-4 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-colors shadow-sm"
-                                                >
-                                                    {registeringId === contest.contest_id ? 'Wait...' : 'Register'}
-                                                </button>
-                                            ) : (
-                                                <>
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <polyline points="12 6 12 12 16 14" />
-                                                    </svg>
-                                                    <span>Deadline: {formatDate(contest.registration_deadline).split(',')[0]}</span>
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="student-card-registrants">
-                                            {contest.registration_count || 0} registered
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
         </div>
     );
 };

@@ -2,6 +2,10 @@
 -- SQLite Database Initialization
 
 -- Drop tables if they exist (for clean initialization)
+DROP TABLE IF EXISTS contest_faqs;
+DROP TABLE IF EXISTS contest_themes;
+DROP TABLE IF EXISTS contest_schedule;
+DROP TABLE IF EXISTS contest_prizes;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS contest_chats;
 DROP TABLE IF EXISTS team_members;
@@ -59,11 +63,63 @@ CREATE TABLE contests (
     image_url TEXT,
     external_reg_link TEXT,
     submission_link TEXT,
+    mode TEXT DEFAULT 'Offline',           -- "Online" / "Offline" / "Hybrid"
+    industry TEXT DEFAULT 'Technology',     -- "Technology", "Finance", etc.
+    participation_type TEXT DEFAULT 'Team', -- "Individual" / "Team"
+    featured INTEGER DEFAULT 0,            -- 1 = featured contest
+    views_count INTEGER DEFAULT 0,         -- track view count
     created_by INTEGER NOT NULL,
     mentor_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES coordinators(coordinator_id),
     FOREIGN KEY (mentor_id) REFERENCES mentors(mentor_id)
+);
+
+-- Contest Prizes Table
+CREATE TABLE contest_prizes (
+    prize_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    amount TEXT,
+    prize_type TEXT DEFAULT 'Cash Prize',
+    description TEXT,
+    winner_count INTEGER DEFAULT 1,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (contest_id) REFERENCES contests(contest_id) ON DELETE CASCADE
+);
+
+-- Contest Schedule / Timeline Table
+CREATE TABLE contest_schedule (
+    schedule_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    round_type TEXT,
+    mode TEXT,
+    start_date DATETIME,
+    end_date DATETIME,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (contest_id) REFERENCES contests(contest_id) ON DELETE CASCADE
+);
+
+-- Contest Themes / Problem Statements Table
+CREATE TABLE contest_themes (
+    theme_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (contest_id) REFERENCES contests(contest_id) ON DELETE CASCADE
+);
+
+-- Contest FAQs Table
+CREATE TABLE contest_faqs (
+    faq_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id INTEGER NOT NULL,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (contest_id) REFERENCES contests(contest_id) ON DELETE CASCADE
 );
 
 -- Contest Registrations Table
